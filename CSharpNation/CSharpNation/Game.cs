@@ -34,7 +34,7 @@ namespace CSharpNation
 
         private bool restoreBackground_Dim = false;
         private bool startAnimation = false;
-        private bool softWave = true;
+        private bool enhancements = true;
 
         private KeyboardState actualKeyboardState, oldKeyboardState;
 
@@ -137,7 +137,7 @@ namespace CSharpNation
                 tempSpectrumData[i] = tempSpectrumData[i] / 2;
             }
 
-            GenerateSoftWave(softWave);
+            WaveEnhancements(enhancements);
 
             CalculateRadius(tempSpectrumData);
 
@@ -194,62 +194,7 @@ namespace CSharpNation
             DrawTexture(LogoTexture, (window.Width / 2) - Radius + 10, (window.Height / 2) - Radius + 10, (window.Width / 2) + Radius - 10, (window.Height / 2) + Radius - 10, 255, 255, 255, 255);
 
             window.SwapBuffers();
-        }              
-        
-        private void GenerateSoftWave(bool enabled)
-        {
-            if (spectrumData.Count != tempSpectrumData.Count || !enabled)
-            {
-                spectrumData.Clear();
-                for (int i = 0; i < tempSpectrumData.Count; i++)
-                {
-                    spectrumData.Add(tempSpectrumData[i]);
-                }
-            }
-            else
-            {
-                GenerateRoundPeeks();                
-
-                for (int i = 0; i < spectrumData.Count; i++)
-                {
-                    if (Math.Abs(spectrumData[i] - tempSpectrumData[i]) > 8)
-                    {
-                        if (spectrumData[i] > tempSpectrumData[i])
-                        {
-                            spectrumData[i] -= 8;
-                        }
-                        else
-                        {
-                            spectrumData[i] += 8;
-                        }
-                    }
-                    else
-                    {
-                        spectrumData[i] = tempSpectrumData[i];                        
-                    }
-                }
-            }
-        }
-
-        private void GenerateRoundPeeks()
-        {
-            for (int i = 1; i < tempSpectrumData.Count - 2; i++)
-            {
-                if (tempSpectrumData[i] > tempSpectrumData[i + 1] && tempSpectrumData[i] > tempSpectrumData[i - 1])
-                {
-                    tempSpectrumData[i - 1] = tempSpectrumData[i];
-                }
-                
-            }
-            
-            for (int i = 1; i < tempSpectrumData.Count - 1; i++)
-            {
-                if (Math.Abs(tempSpectrumData[i] - tempSpectrumData[i - 1]) < 20 && tempSpectrumData[i] < tempSpectrumData[i + 1])
-                {
-                    tempSpectrumData[i] = (tempSpectrumData[i + 1] + tempSpectrumData[i - 1]) / 3;
-                }
-            }
-        }
+        }                             
 
         #region Keys
 
@@ -278,17 +223,8 @@ namespace CSharpNation
 
             if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.M))
             {
-                if (softWave)
-                {
-                    softWave = false;
-                }
-                else
-                {
-                    softWave = true;
-                }
-                tempSpectrumData = null;
-                //spectrumData.Clear();
-                //Console.WriteLine(softWave);
+                enhancements = !enhancements;
+                tempSpectrumData = null;                
             }
 
             if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.N))
@@ -390,6 +326,67 @@ namespace CSharpNation
             Vector2 pos = 0.5f * (a + (b * t) + (c * t * t) + (d * t * t * t));
 
             return pos;
+        }
+
+        private void WaveEnhancements(bool enabled)
+        {
+            if (spectrumData.Count != tempSpectrumData.Count || !enabled)
+            {
+                spectrumData.Clear();
+                for (int i = 0; i < tempSpectrumData.Count; i++)
+                {
+                    spectrumData.Add(tempSpectrumData[i]);
+                }
+            }
+            else
+            {
+                GenerateRoundPeeks();
+
+                for (int i = 0; i < spectrumData.Count; i++)
+                {
+                    if (Math.Abs(spectrumData[i] - tempSpectrumData[i]) > 10)
+                    {
+                        if (spectrumData[i] > tempSpectrumData[i])
+                        {
+                            spectrumData[i] -= 10;
+                        }
+                        else
+                        {
+                            spectrumData[i] += 10;
+                        }
+                    }
+                    else
+                    {
+                        spectrumData[i] = tempSpectrumData[i];
+                    }
+                }
+            }
+        }
+
+        private void GenerateRoundPeeks()
+        {
+            for (int i = 1; i < tempSpectrumData.Count - 2; i++)
+            {
+                if (tempSpectrumData[i] > tempSpectrumData[i + 1] && tempSpectrumData[i] > tempSpectrumData[i - 1])
+                {
+                    if (tempSpectrumData[i - 1] > tempSpectrumData[i + 1])
+                    {
+                        tempSpectrumData[i - 1] = tempSpectrumData[i];
+                    }
+                    else
+                    {
+                        tempSpectrumData[i + 1] = tempSpectrumData[i];
+                    }
+                }
+            }
+
+            for (int i = 1; i < tempSpectrumData.Count - 1; i++)
+            {
+                if (Math.Abs(tempSpectrumData[i] - tempSpectrumData[i - 1]) < 20 && tempSpectrumData[i] < tempSpectrumData[i + 1])
+                {
+                    tempSpectrumData[i] = (tempSpectrumData[i + 1] + tempSpectrumData[i - 1]) / 3.5;
+                }
+            }
         }
 
         private void DrawWave(List<Vector2> catmullRomList, Color C)
