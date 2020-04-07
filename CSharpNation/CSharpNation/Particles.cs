@@ -29,23 +29,19 @@ namespace CSharpNation
             public float radius;
             public int texture;
             public int opacity;
-
-            public float maxRadius;
-            public float radiusIncrement;
+                       
             public float xIncrement;
             public float yIncrement;
 
-            public Particle(Vector2 Position, float Radius, int Texture, int Opacity, float RadiusIncrement, float X_Increment, float Y_Increment, float MaxRadius)
+            public Particle(Vector2 Position, float Radius, int Texture, int Opacity, float X_Increment, float Y_Increment)
             {
                 position = Position;
                 radius = Radius;
                 texture = Texture;
                 opacity = Opacity;
-
-                radiusIncrement = RadiusIncrement;
+               
                 xIncrement = X_Increment;
-                yIncrement = Y_Increment;
-                maxRadius = MaxRadius;
+                yIncrement = Y_Increment;                
             }
         }
 
@@ -76,7 +72,7 @@ namespace CSharpNation
             while (particlesList.Count < _config.N_Particles)
             {
                 Particle P = new Particle(new Vector2(random.Next((maxWidth / 2) - (maxHeight / 4), (maxWidth / 2) + (maxHeight / 4)), random.Next((maxHeight / 2) - (maxHeight / 4), (maxHeight / 2) + (maxHeight / 4)))
-                                            , random.Next(5, 20), texture, random.Next(50, 255), (float)(random.NextDouble() * 0.5), (float)(-1 * random.NextDouble()), (float)(random.Next(-1, 2) * random.NextDouble()), 50);
+                                            , random.Next(5, 20), texture, random.Next(50, 255), (float)(-1 * random.NextDouble()), (float)(random.Next(-1, 2) * random.NextDouble()));
                 if (P.xIncrement > -0.5)
                 {
                     P.xIncrement = -0.5f;
@@ -96,7 +92,7 @@ namespace CSharpNation
 
                 particlesList.Add(P);
 
-                Particle P2 = new Particle(new Vector2((maxWidth / 2) + ((maxWidth / 2) - P.position.X), P.position.Y), P.radius, P.texture, P.opacity, P.radiusIncrement, P.xIncrement * -1, P.yIncrement, P.maxRadius);
+                Particle P2 = new Particle(new Vector2((maxWidth / 2) + ((maxWidth / 2) - P.position.X), P.position.Y), P.radius, P.texture, P.opacity, P.xIncrement * -1, P.yIncrement);
 
                 particlesListMirror.Add(P2);
             }
@@ -124,21 +120,19 @@ namespace CSharpNation
             for (int i = 0; i < particlesList.Count; i++)
             {
                 Vector2 newVector = new Vector2(particlesList[i].position.X + particlesList[i].xIncrement * aditionalVelocity,
-                                                particlesList[i].position.Y + particlesList[i].yIncrement * aditionalVelocity);
-                float newRadius = particlesList[i].radius /*+ (particlesList[i].radius * particlesList[i].radiusIncrement * aditionalVelocity)*/;
+                                                particlesList[i].position.Y + particlesList[i].yIncrement * aditionalVelocity);                
 
-                particlesList[i] = new Particle(newVector, Clamp(newRadius, particlesList[i].maxRadius, 2), particlesList[i].texture, particlesList[i].opacity,
-                    particlesList[i].radiusIncrement, particlesList[i].xIncrement, particlesList[i].yIncrement, particlesList[i].maxRadius);
+                particlesList[i] = new Particle(newVector, particlesList[i].radius, particlesList[i].texture, particlesList[i].opacity,
+                    particlesList[i].xIncrement, particlesList[i].yIncrement);
             }
 
             for (int i = 0; i < particlesListMirror.Count; i++)
             {
                 Vector2 newVector = new Vector2(particlesListMirror[i].position.X + particlesListMirror[i].xIncrement * aditionalVelocity,
-                                                particlesListMirror[i].position.Y + particlesListMirror[i].yIncrement * aditionalVelocity);
-                float newRadius = particlesListMirror[i].radius /*+ (particlesListMirror[i].radius * particlesListMirror[i].radiusIncrement * aditionalVelocity)*/;
+                                                particlesListMirror[i].position.Y + particlesListMirror[i].yIncrement * aditionalVelocity);                
 
-                particlesListMirror[i] = new Particle(newVector, Clamp(newRadius, particlesListMirror[i].maxRadius, 2), particlesListMirror[i].texture, particlesListMirror[i].opacity,
-                    particlesListMirror[i].radiusIncrement, particlesListMirror[i].xIncrement, particlesListMirror[i].yIncrement, particlesListMirror[i].maxRadius);
+                particlesListMirror[i] = new Particle(newVector, particlesListMirror[i].radius, particlesListMirror[i].texture, particlesListMirror[i].opacity,
+                    particlesListMirror[i].xIncrement, particlesListMirror[i].yIncrement);
             }
         }
 
