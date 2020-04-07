@@ -70,5 +70,17 @@ namespace CSharpNation {
                 this["Auto_Change_Background"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool Wave_Enhancements {
+            get {
+                return ((bool)(this["Wave_Enhancements"]));
+            }
+            set {
+                this["Wave_Enhancements"] = value;
+            }
+        }
     }
 }

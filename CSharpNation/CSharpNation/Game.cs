@@ -34,7 +34,7 @@ namespace CSharpNation
 
         private bool restoreBackground_Dim = false;
         private bool startAnimation = false;
-        private bool enhancements = true;
+        //private bool enhancements = true;
 
         private KeyboardState actualKeyboardState, oldKeyboardState;
 
@@ -80,12 +80,12 @@ namespace CSharpNation
             window.Resize += OnResize;
             window.RenderFrame += OnRender;
             window.UpdateFrame += OnUpdate;
-
+            /*
             Console.WriteLine("------------------------------------");
             Console.WriteLine("Press O to change settings");
             Console.WriteLine("Press F for fullscreen");
             Console.WriteLine("Press N for next background");
-
+            */
             window.Run(60, 60);
         }
 
@@ -107,11 +107,13 @@ namespace CSharpNation
 
         private void OnUpdate(object sender, EventArgs e)
         {
+            //enhancements = _config.Wave_Enhancements;
+
             KeyPressedActions();
 
             if (_config.Auto_Change_Background)
             {
-                if (_config.UpdateCount > _config.BackgroundChangeSeconds * 60)
+                if (_config.UpdateCount > _config.Background_Change_Seconds * 60)
                 {
                     startAnimation = true;
                     _config.UpdateCount = 0;
@@ -131,13 +133,13 @@ namespace CSharpNation
             }
 
             tempSpectrumData = _analizer.GetSpectrum();
-
+            
             for (int i = 0; i < 12; i++)
             {
                 tempSpectrumData[i] = tempSpectrumData[i] / 2;
             }
-
-            WaveEnhancements(enhancements);
+            
+            WaveEnhancements(_config.Wave_Enhancements);
 
             CalculateRadius(tempSpectrumData);
 
@@ -220,13 +222,13 @@ namespace CSharpNation
                     window.WindowState = WindowState.Fullscreen;
                 }
             }
-
+            /*
             if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.M))
             {
                 enhancements = !enhancements;
                 tempSpectrumData = null;                
             }
-
+            */
             if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.N))
             {
                 startAnimation = true;
@@ -234,7 +236,7 @@ namespace CSharpNation
 
             if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.O))
             {
-                _config.ChangeSettings();
+                _config.WriteSettings();
             }
         }
 
