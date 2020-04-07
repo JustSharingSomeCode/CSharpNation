@@ -35,75 +35,7 @@ namespace CSharpNation
         public int GetAlpha()
         {
             return ActualBackground_Dim * 255 / 100;
-        }
-
-        public void ChangeSettings()
-        {
-            try
-            {
-                bool Repeat = true;
-                int Option;
-                while (Repeat)
-                {
-                    Console.Clear();
-                    Console.WriteLine("Press 1 to change background dim");
-                    Console.WriteLine("Press 2 to change number of particles in screen");
-                    Console.WriteLine("Press 3 to change the background duration");
-                    Console.WriteLine("Press 4 to switch auto background change");
-                    Console.WriteLine("Press 5 to switch wave enhancements");
-                    Console.WriteLine("Press 6 to save settings");
-
-                    Option = int.Parse(Console.ReadKey(true).KeyChar.ToString());
-
-                    switch (Option)
-                    {
-                        case 1:
-                            Console.WriteLine("Write a number between 0 and 100");
-                            Background_Dim = int.Parse(Console.ReadLine().ToString());
-                            ActualBackground_Dim = Background_Dim;
-                            break;
-                        case 2:
-                            Console.WriteLine("Write number of particles");
-                            N_Particles = int.Parse(Console.ReadLine().ToString());
-                            break;
-                        case 3:
-                            Console.WriteLine("Write time in seconds");
-                            Background_Change_Seconds = int.Parse(Console.ReadLine().ToString());
-                            break;
-                        case 4:
-                            if (Auto_Change_Background)
-                            {
-                                Auto_Change_Background = false;
-                            }
-                            else
-                            {
-                                Auto_Change_Background = true;
-                            }
-                            break;
-                        case 5:
-                            AppSettings.Default.Background_Dim = Background_Dim;
-                            AppSettings.Default.N_Particles = N_Particles;
-                            AppSettings.Default.Background_Change_Seconds = Background_Change_Seconds;
-                            AppSettings.Default.Auto_Change_Background = Auto_Change_Background;
-                            AppSettings.Default.Save();
-
-                            Repeat = false;
-                            break;
-                    }
-                }
-                Console.Clear();
-                WriteSettings();
-            }
-            catch (Exception Ex)
-            {
-                Console.Clear();
-                Console.WriteLine(Ex.Message);
-                Console.WriteLine("Press a key to continue");
-                Console.ReadKey(true);
-                Console.Clear();
-                WriteSettings();
-            }
-        }
+        }        
 
         public void WriteShortcuts()
         {
@@ -167,7 +99,7 @@ namespace CSharpNation
             switch (KeyPressed(keysToCheck))
             {
                 case ConsoleKey.D1:
-                    ChangeDim();
+                    Change_Background_Dim();
                     break;
 
                 case ConsoleKey.D2:
@@ -179,7 +111,7 @@ namespace CSharpNation
                     break;
 
                 case ConsoleKey.D4:
-                    ChangeBackgroundDuration();
+                    Change_Background_Duration();
                     break;
 
                 case ConsoleKey.D5:
@@ -192,7 +124,9 @@ namespace CSharpNation
             }
         }
 
-        private void ChangeDim()
+        #region ChangeVoids
+
+        private void Change_Background_Dim()
         {            
             ShowChangeInstruction("-Background Dim", " Write A Number Between 0 And 100");
 
@@ -209,13 +143,13 @@ namespace CSharpNation
                 else
                 {
                     SettingsError("Please Write A Number Between 0 And 100");
-                    ChangeDim();
+                    Change_Background_Dim();
                 }
             }
             catch
             {
                 SettingsError("Please Write Only Numbers");
-                ChangeDim();
+                Change_Background_Dim();
             }
         }
 
@@ -257,7 +191,7 @@ namespace CSharpNation
             SaveSettings();
         }
 
-        private void ChangeBackgroundDuration()
+        private void Change_Background_Duration()
         {
             ShowChangeInstruction("-Background Duration", " Write The Time In Seconds");
 
@@ -271,7 +205,7 @@ namespace CSharpNation
             catch
             {
                 SettingsError("Please Write Only Numbers");
-                ChangeBackgroundDuration();
+                Change_Background_Duration();
             }
         }
 
@@ -303,6 +237,8 @@ namespace CSharpNation
             Console.ResetColor();
             Console.WriteLine(Instruction);
         }
+
+        #endregion
 
         private void SettingsError(string errorMsg, bool clearConsole = true)
         {
