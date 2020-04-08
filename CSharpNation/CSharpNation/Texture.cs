@@ -13,8 +13,9 @@ namespace CSharpNation
 {
     class Texture
     {
-        public List<int> TexturesLoaded = new List<int>();
-        private int BackgroundIndex = 0;
+        private List<int> TexturesLoaded = new List<int>();
+        private List<string> TexturesName = new List<string>();
+        public int BackgroundIndex { get; set; } = 0;
 
         public int LoadTexture(string file, int DivideImg = 1)
         {
@@ -47,6 +48,7 @@ namespace CSharpNation
             for (int i = 0; i < Paths.Length; i++)
             {
                 TexturesLoaded.Add(LoadTexture("Backgrounds/" + Paths[i], 2));
+                TexturesName.Add(Paths[i]);
             }
         }
 
@@ -59,6 +61,28 @@ namespace CSharpNation
             }
 
             return TexturesLoaded[BackgroundIndex];
+        }
+
+        public int PreviousBackground()
+        {
+            BackgroundIndex--;
+            if (BackgroundIndex < 0)
+            {
+                BackgroundIndex = TexturesLoaded.Count - 1;
+            }
+
+            return TexturesLoaded[BackgroundIndex];
+        }
+
+        public int GetBackgroundByIndex(int index)
+        {
+            BackgroundIndex = index;
+            return TexturesLoaded[BackgroundIndex];
+        } 
+
+        public List<string> GetBackgroundsList()
+        {
+            return TexturesName;
         }
     }
 }

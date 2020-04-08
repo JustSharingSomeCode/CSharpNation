@@ -34,6 +34,7 @@ namespace CSharpNation
 
         private bool restoreBackground_Dim = false;
         private bool startAnimation = false;
+        private bool reverseAnimation = false;
         //private bool enhancements = true;
 
         private KeyboardState actualKeyboardState, oldKeyboardState;
@@ -58,7 +59,7 @@ namespace CSharpNation
 
                 _texture.LoadBackgrounds(Backgrounds);
 
-                BackgroundTexture = _texture.TexturesLoaded[0];
+                BackgroundTexture = _texture.GetBackgroundByIndex(0);
             }
 
             if (!LoadTexture(ref LogoTexture, "Logo.jpg"))
@@ -222,13 +223,13 @@ namespace CSharpNation
                     window.WindowState = WindowState.Fullscreen;
                 }
             }
-            /*
-            if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.M))
+
+            if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.B))
             {
-                enhancements = !enhancements;
-                tempSpectrumData = null;                
+                reverseAnimation = true;
+                startAnimation = true;
             }
-            */
+
             if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.N))
             {
                 startAnimation = true;
@@ -237,6 +238,12 @@ namespace CSharpNation
             if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.O))
             {
                 _config.WriteSettings();
+            }
+
+            if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.L))
+            {
+                BackgroundTexture = _texture.GetBackgroundByIndex(_config.SelectBackground(_texture.GetBackgroundsList(),_texture.BackgroundIndex));
+                _config.WriteShortcuts();
             }
         }
 
@@ -497,7 +504,15 @@ namespace CSharpNation
         {
             if (_config.ActualBackground_Dim <= 0)
             {
-                BackgroundTexture = _texture.NextBackground();
+                if (reverseAnimation)
+                {
+                    BackgroundTexture = _texture.PreviousBackground();
+                    reverseAnimation = false;
+                }
+                else
+                {
+                    BackgroundTexture = _texture.NextBackground();
+                }                
                 restoreBackground_Dim = true;
             }
 

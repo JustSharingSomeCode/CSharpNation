@@ -50,6 +50,7 @@ namespace CSharpNation
             Console.WriteLine(" F = Fullscreen");
             Console.WriteLine(" N = Next background");
             Console.WriteLine(" B = Previous background");
+            Console.WriteLine(" L = Select Background By Index");
         }
 
         public void WriteSettings()
@@ -121,6 +122,44 @@ namespace CSharpNation
                 case ConsoleKey.Escape:
                     WriteShortcuts();
                     break;
+            }
+        }
+
+        public int SelectBackground(List<string> list, int bgIndex)
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("-Backgrounds list");
+            Console.ResetColor();            
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                Console.WriteLine(" {0}) {1}", i + 1, list[i]);
+            }
+
+            Console.WriteLine("Press 0 To Cancel");
+
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("WRITE THE NUMBER OF THE BACKGROUND TO SELECT");
+            Console.ResetColor();
+
+            try
+            {
+                int input = Convert.ToInt32(Console.ReadLine()) - 1;
+
+                if (input >= 0 && input < list.Count)
+                {
+                    return input;                    
+                }
+                else
+                {
+                    return bgIndex;
+                }                
+            }
+            catch
+            {
+                SettingsError("Please Write Only Numbers");
+                return SelectBackground(list, bgIndex);
             }
         }
 
