@@ -35,6 +35,7 @@ namespace CSharpNation
         private bool restoreBackground_Dim = false;
         private bool startAnimation = false;
         private bool reverseAnimation = false;
+        //private bool enableShortcuts = true;
         //private bool enhancements = true;
 
         private KeyboardState actualKeyboardState, oldKeyboardState;
@@ -50,7 +51,22 @@ namespace CSharpNation
 
             if (Directory.Exists("Resources\\Backgrounds"))
             {
-                string[] Backgrounds = Directory.GetFiles("Resources\\Backgrounds", "*.jpg");
+                string[] BackgroundsJpg = Directory.GetFiles("Resources\\Backgrounds", "*.jpg");
+                string[] BackgroundsPng = Directory.GetFiles("Resources\\Backgrounds", "*.png");
+
+                string[] Backgrounds = new string[BackgroundsJpg.Length + BackgroundsPng.Length];
+
+                for (int i = 0; i < Backgrounds.Length; i++)
+                {
+                    if (i < BackgroundsJpg.Length)
+                    {
+                        Backgrounds[i] = BackgroundsJpg[i];
+                    }
+                    else
+                    {
+                        Backgrounds[i] = BackgroundsPng[i - BackgroundsJpg.Length];
+                    }
+                }
 
                 for (int i = 0; i < Backgrounds.Length; i++)
                 {
@@ -134,8 +150,16 @@ namespace CSharpNation
             }
 
             tempSpectrumData = _analizer.GetSpectrum();
-            
-            for (int i = 0; i < 12; i++)
+
+            if (!_config.EnableShortcuts)
+            {
+                for (int i = 0; i < tempSpectrumData.Count; i++)
+                {
+                    tempSpectrumData[i] = 0;
+                }
+            }
+
+            for(int i = 0; i < tempSpectrumData.Count; i++)
             {
                 tempSpectrumData[i] = tempSpectrumData[i] / 2;
             }
@@ -162,7 +186,7 @@ namespace CSharpNation
 
             float AspectRatio = 9f / 16f;
             double increaseX = (Radius - (window.Height / 4)) / 1.5;
-            double increaseY = AspectRatio * increaseX;                       
+            double increaseY = AspectRatio * increaseX;
 
             DrawTexture(BackgroundTexture, 0 - increaseX, 0 - increaseY, window.Width / 2, window.Height + increaseY, _config.GetAlpha(), 255, 255, 255);//(Radius - (window.Height / 4))
             DrawTexture(BackgroundTexture, window.Width + increaseX, 0 - increaseY, window.Width / 2, window.Height + increaseY, _config.GetAlpha(), 255, 255, 255);
@@ -177,6 +201,7 @@ namespace CSharpNation
                 DrawTexture(particlesList[i].texture, x, y, xMax, yMax, particlesList[i].opacity, 255, 255, 255);
             }
 
+
             DrawWave(replay.GetCatmullRomPoints(0), Color.FromArgb(0, 255, 0));
             DrawWave(replay.GetCatmullRomPoints(2), Color.FromArgb(51, 204, 255));
             DrawWave(replay.GetCatmullRomPoints(4), Color.Blue);
@@ -186,6 +211,7 @@ namespace CSharpNation
             DrawWave(replay.GetCatmullRomPoints(12), Color.Yellow);
             DrawWave(catmullRomList, Color.White);
 
+
             /*
             for (int i = 0; i < controlPointsList.Count; i++)
             {
@@ -193,11 +219,11 @@ namespace CSharpNation
             }
             */
 
-            DrawPrincipalCircle();
-            DrawTexture(LogoTexture, (window.Width / 2) - Radius + 10, (window.Height / 2) - Radius + 10, (window.Width / 2) + Radius - 10, (window.Height / 2) + Radius - 10, 255, 255, 255, 255);
+            DrawPrincipalCircle();            
+            DrawTexture(LogoTexture, (window.Width * _config.Logo_Left_Offset) - Radius, (window.Height * _config.Logo_Bottom_Offset) - Radius, (window.Width * _config.Logo_Right_Offset) + Radius, (window.Height * _config.Logo_Top_Offset) + Radius, 255, 255, 255, 255);
 
             window.SwapBuffers();
-        }                             
+        }                       
 
         #region Keys
 
@@ -211,39 +237,85 @@ namespace CSharpNation
             oldKeyboardState = actualKeyboardState;
             actualKeyboardState = Keyboard.GetState();
 
-            if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.F))
+            if (_config.EnableShortcuts)
             {
-                replay.catmullRomPoints.Clear();
-                if (window.WindowState == WindowState.Fullscreen)
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.F))
                 {
-                    window.WindowState = WindowState.Normal;
+                    replay.catmullRomPoints.Clear();
+                    if (window.WindowState == WindowState.Fullscreen)
+                    {
+                        window.WindowState = WindowState.Normal;
+                    }
+                    else
+                    {
+                        window.WindowState = WindowState.Fullscreen;
+                    }
                 }
-                else
+
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.B))
                 {
-                    window.WindowState = WindowState.Fullscreen;
+                    reverseAnimation = true;
+                    startAnimation = true;
+                }
+
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.N))
+                {
+                    startAnimation = true;
+                }
+
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.O))
+                {
+                    _config.WriteSettings();
+                }
+
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.L))
+                {
+                    BackgroundTexture = _texture.GetBackgroundByIndex(_config.SelectBackground(_texture.GetBackgroundsList(), _texture.BackgroundIndex));
+                    _config.WriteShortcuts();
                 }
             }
-
-            if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.B))
+            else
             {
-                reverseAnimation = true;
-                startAnimation = true;
-            }
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.Escape))
+                {
+                    _config.SaveSettings();
+                    _config.EnableShortcuts = true;
+                    _config.WriteSettings();
+                }
 
-            if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.N))
-            {
-                startAnimation = true;
-            }
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.Up))
+                {
+                    _config.OffsetAxis = Config.Axis.Y_Top;
+                    _config.WriteOffset();
+                }
 
-            if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.O))
-            {
-                _config.WriteSettings();
-            }
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.Down))
+                {
+                    _config.OffsetAxis = Config.Axis.Y_Bottom;
+                    _config.WriteOffset();
+                }
 
-            if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.L))
-            {
-                BackgroundTexture = _texture.GetBackgroundByIndex(_config.SelectBackground(_texture.GetBackgroundsList(),_texture.BackgroundIndex));
-                _config.WriteShortcuts();
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.Left))
+                {
+                    _config.OffsetAxis = Config.Axis.X_Left;
+                    _config.WriteOffset();
+                }
+
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.Right))
+                {
+                    _config.OffsetAxis = Config.Axis.X_Right;
+                    _config.WriteOffset();
+                }
+
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.D))
+                {
+                    _config.AdjustLogoOnRuntime(0.005);
+                }
+
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.A))
+                {
+                    _config.AdjustLogoOnRuntime(-0.005);
+                }
             }
         }
 
@@ -388,7 +460,7 @@ namespace CSharpNation
                     }
                 }
             }
-
+            
             for (int i = 1; i < tempSpectrumData.Count - 1; i++)
             {
                 if (Math.Abs(tempSpectrumData[i] - tempSpectrumData[i - 1]) < 20 && tempSpectrumData[i] < tempSpectrumData[i + 1])

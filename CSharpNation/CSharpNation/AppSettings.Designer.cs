@@ -82,5 +82,53 @@ namespace CSharpNation {
                 this["Wave_Enhancements"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.5")]
+        public double Logo_Left_Offset {
+            get {
+                return ((double)(this["Logo_Left_Offset"]));
+            }
+            set {
+                this["Logo_Left_Offset"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.5")]
+        public double Logo_Right_Offset {
+            get {
+                return ((double)(this["Logo_Right_Offset"]));
+            }
+            set {
+                this["Logo_Right_Offset"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.5")]
+        public double Logo_Top_Offset {
+            get {
+                return ((double)(this["Logo_Top_Offset"]));
+            }
+            set {
+                this["Logo_Top_Offset"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.5")]
+        public double Logo_Bottom_Offset {
+            get {
+                return ((double)(this["Logo_Bottom_Offset"]));
+            }
+            set {
+                this["Logo_Bottom_Offset"] = value;
+            }
+        }
     }
 }

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.IO;
 using CSharpNation;
 
+using OpenTK.Input;
+
 namespace CSharpNation
 {
     class Config
@@ -20,14 +22,35 @@ namespace CSharpNation
             Auto_Change_Background = AppSettings.Default.Auto_Change_Background;
             Wave_Enhancements = AppSettings.Default.Wave_Enhancements;
 
+            Logo_Top_Offset = AppSettings.Default.Logo_Top_Offset;
+            Logo_Right_Offset = AppSettings.Default.Logo_Right_Offset;
+            Logo_Bottom_Offset = AppSettings.Default.Logo_Bottom_Offset;
+            Logo_Left_Offset = AppSettings.Default.Logo_Left_Offset;
+
             WriteShortcuts();
         }
+
+        public enum Axis
+        {
+            X_Left,
+            X_Right,
+            Y_Top,
+            Y_Bottom
+        }
+
+        public Axis OffsetAxis { get; set; }
 
         public int Background_Dim { get; set; }
         public int N_Particles { get; set; }
         public int Background_Change_Seconds { get; set; }
         public bool Auto_Change_Background { get; set; }
         public bool Wave_Enhancements { get; set; }
+        public bool EnableShortcuts { get; set; } = true;
+
+        public double Logo_Left_Offset { get; set; } = 0.5;
+        public double Logo_Right_Offset { get; set; } = 0.535;
+        public double Logo_Top_Offset { get; set; } = 0.5;
+        public double Logo_Bottom_Offset { get; set; } = 0.5;
 
         public int ActualBackground_Dim;
         public int UpdateCount = 0;
@@ -87,6 +110,11 @@ namespace CSharpNation
             Console.WriteLine("     If True, Modify The Wave To Create Round Peeks And Reduce Wave Jumps");
             Console.ResetColor();
 
+            Console.WriteLine(" 6) Logo Offset");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("     Move The Logo, Make It Bigger Or Smaller");
+            Console.ResetColor();
+
             Console.WriteLine("PRESS ESCAPE TO GO BACK");
 
             ConsoleKey[] keysToCheck = new ConsoleKey[6];
@@ -95,6 +123,7 @@ namespace CSharpNation
             keysToCheck[2] = ConsoleKey.D3;
             keysToCheck[3] = ConsoleKey.D4;
             keysToCheck[4] = ConsoleKey.D5;
+            keysToCheck[4] = ConsoleKey.D6;
             keysToCheck[5] = ConsoleKey.Escape;
 
             switch (KeyPressed(keysToCheck))
@@ -117,6 +146,10 @@ namespace CSharpNation
 
                 case ConsoleKey.D5:
                     Change_Wave_Enhancements();
+                    break;
+
+                case ConsoleKey.D6:
+                    AdjustLogoOffset();
                     break;
 
                 case ConsoleKey.Escape:
@@ -163,7 +196,7 @@ namespace CSharpNation
             }
         }
 
-        #region ChangeVoids
+        #region Set_Settings_Value
 
         private void Change_Background_Dim()
         {            
@@ -268,6 +301,53 @@ namespace CSharpNation
             SaveSettings();
         }
 
+        private void AdjustLogoOffset()
+        {
+            EnableShortcuts = false;
+            ShowChangeInstruction("-Logo Offset","  Use The Arrow Keys To Select The Side You Want To Move, Then Use 'A' And 'D' Keys To Move Right,Left,Up Or Down.");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("¡¡PRESS THE KEYS ON THE VISUALIZER WINDOW!!");
+            Console.ResetColor();
+        }               
+
+        public void AdjustLogoOnRuntime(double value)
+        {
+            if (OffsetAxis == Axis.X_Left)
+            {
+                Logo_Left_Offset += value;
+            }
+            if (OffsetAxis == Axis.X_Right)
+            {
+                Logo_Right_Offset += value;
+            }
+            if (OffsetAxis == Axis.Y_Top)
+            {
+                Logo_Top_Offset += value;            
+            }
+            if (OffsetAxis == Axis.Y_Bottom)
+            {
+                Logo_Bottom_Offset += value;
+            }
+
+            WriteOffset();
+        }
+
+        public void WriteOffset()
+        {
+            Console.Clear();
+
+            AdjustLogoOffset();
+            Console.WriteLine();
+
+            Console.WriteLine(" Selected Side = {0}", OffsetAxis);
+            Console.WriteLine();
+
+            Console.WriteLine(" Logo Left Offset = {0}",Logo_Left_Offset);
+            Console.WriteLine(" Logo Right Offset = {0}", Logo_Right_Offset);
+            Console.WriteLine(" Logo Top Offset = {0}", Logo_Top_Offset);
+            Console.WriteLine(" Logo Bottom Offset = {0}", Logo_Bottom_Offset);
+        }
+
         private void ShowChangeInstruction(string Option, string Instruction)
         {
             Console.Clear();
@@ -297,13 +377,19 @@ namespace CSharpNation
             }
         }
 
-        private void SaveSettings()
+        public void SaveSettings()
         {
             AppSettings.Default.Background_Dim = Background_Dim;
             AppSettings.Default.N_Particles = N_Particles;
             AppSettings.Default.Background_Change_Seconds = Background_Change_Seconds;
             AppSettings.Default.Auto_Change_Background = Auto_Change_Background;
             AppSettings.Default.Wave_Enhancements = Wave_Enhancements;
+
+            AppSettings.Default.Logo_Top_Offset = Logo_Top_Offset;
+            AppSettings.Default.Logo_Right_Offset = Logo_Right_Offset;
+            AppSettings.Default.Logo_Bottom_Offset = Logo_Bottom_Offset;
+            AppSettings.Default.Logo_Left_Offset = Logo_Left_Offset;
+
             AppSettings.Default.Save();
 
             WriteSettings();
