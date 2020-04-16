@@ -10,7 +10,7 @@ namespace CSharpNation
 {
     class Replay
     {
-        public List<List<Vector2>> catmullRomPoints = new List<List<Vector2>>();
+        public List<List<Vector2>> catmullRomPoints = new List<List<Vector2>>();        
 
         public void Push(List<Vector2> newCatmullRomPoints)
         {
@@ -37,6 +37,6 @@ namespace CSharpNation
             }
 
             return null;
-        }
+        }        
     }
 }

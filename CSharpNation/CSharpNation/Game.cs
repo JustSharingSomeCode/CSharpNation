@@ -21,6 +21,7 @@ namespace CSharpNation
         private Replay replay;
         private Texture _texture = new Texture();
         private Config _config = new Config();
+        private BeatDetection _beatDetection = new BeatDetection();
 
         private List<Vector2> controlPointsList = new List<Vector2>(), catmullRomList = new List<Vector2>();
         private List<double> spectrumData = new List<double>();
@@ -34,9 +35,7 @@ namespace CSharpNation
 
         private bool restoreBackground_Dim = false;
         private bool startAnimation = false;
-        private bool reverseAnimation = false;
-        //private bool enableShortcuts = true;
-        //private bool enhancements = true;
+        private bool reverseAnimation = false;       
 
         private KeyboardState actualKeyboardState, oldKeyboardState;
 
@@ -97,12 +96,7 @@ namespace CSharpNation
             window.Resize += OnResize;
             window.RenderFrame += OnRender;
             window.UpdateFrame += OnUpdate;
-            /*
-            Console.WriteLine("------------------------------------");
-            Console.WriteLine("Press O to change settings");
-            Console.WriteLine("Press F for fullscreen");
-            Console.WriteLine("Press N for next background");
-            */
+            
             window.Run(60, 60);
         }
 
@@ -123,9 +117,7 @@ namespace CSharpNation
         }
 
         private void OnUpdate(object sender, EventArgs e)
-        {
-            //enhancements = _config.Wave_Enhancements;
-
+        {                    
             KeyPressedActions();
 
             if (_config.Auto_Change_Background)
@@ -147,9 +139,9 @@ namespace CSharpNation
             if (startAnimation)
             {
                 BackgroundChangeAnimation();
-            }
-
-            tempSpectrumData = _analizer.GetSpectrum();
+            }           
+            
+            tempSpectrumData = _analizer.GetSpectrum();                                               
 
             if (!_config.EnableShortcuts)
             {
@@ -166,18 +158,22 @@ namespace CSharpNation
             
             WaveEnhancements(_config.Wave_Enhancements);
 
+            if (_config.Beat_Detection)
+            {
+                _beatDetection.DetectBeat(_config.Beat_Sensibility, ref tempSpectrumData, ref spectrumData, 5);
+            }            
+
             CalculateRadius(tempSpectrumData);
 
             CreateControlPoints();
 
-            float aditionalVelocity = (float)((Radius - (window.Height / 4)) * 0.3);
-            //Console.WriteLine(aditionalVelocity);
+            float aditionalVelocity = (float)((Radius - (window.Height / 4)) * 0.3);           
 
             particles.updateParticles(ParticleTexture, aditionalVelocity);
 
             particlesList = particles.GetParticlesList();
 
-            replay.Push(catmullRomList);
+            replay.Push(catmullRomList);           
         }
 
         private void OnRender(object sender, EventArgs e)
@@ -209,22 +205,21 @@ namespace CSharpNation
             DrawWave(replay.GetCatmullRomPoints(8), Color.FromArgb(255, 102, 255));
             DrawWave(replay.GetCatmullRomPoints(10), Color.Red);
             DrawWave(replay.GetCatmullRomPoints(12), Color.Yellow);
-            DrawWave(catmullRomList, Color.White);
-
+            DrawWave(catmullRomList, Color.White);            
 
             /*
             for (int i = 0; i < controlPointsList.Count; i++)
             {
                 DrawCircle(controlPointsList[i].X, controlPointsList[i].Y, 5, Color.Green);
-            }
+            }   
             */
 
             DrawPrincipalCircle();            
             DrawTexture(LogoTexture, (window.Width * _config.Logo_Left_Offset) - Radius, (window.Height * _config.Logo_Bottom_Offset) - Radius, (window.Width * _config.Logo_Right_Offset) + Radius, (window.Height * _config.Logo_Top_Offset) + Radius, 255, 255, 255, 255);
 
             window.SwapBuffers();
-        }                       
-
+        }                                  
+    
         #region Keys
 
         private bool KeyPressed(KeyboardState actualState, KeyboardState oldState, Key k)
@@ -272,7 +267,7 @@ namespace CSharpNation
                 {
                     BackgroundTexture = _texture.GetBackgroundByIndex(_config.SelectBackground(_texture.GetBackgroundsList(), _texture.BackgroundIndex));
                     _config.WriteShortcuts();
-                }
+                }                
             }
             else
             {
@@ -425,15 +420,15 @@ namespace CSharpNation
 
                 for (int i = 0; i < spectrumData.Count; i++)
                 {
-                    if (Math.Abs(spectrumData[i] - tempSpectrumData[i]) > 10)
+                    if (Math.Abs(spectrumData[i] - tempSpectrumData[i]) > 15)
                     {
                         if (spectrumData[i] > tempSpectrumData[i])
                         {
-                            spectrumData[i] -= 10;
+                            spectrumData[i] -= 15;
                         }
                         else
                         {
-                            spectrumData[i] += 10;
+                            spectrumData[i] += 15;
                         }
                     }
                     else
@@ -517,7 +512,7 @@ namespace CSharpNation
         }
 
         private void CalculateRadius(List<double> Data)
-        {
+        {                
             Radius = 0;
 
             for (int i = 0; i < Data.Count; i++)
