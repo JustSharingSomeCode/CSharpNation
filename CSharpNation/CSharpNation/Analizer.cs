@@ -18,8 +18,9 @@ namespace CSharpNation
         public List<double> _spectrumdata;   //spectrum data buffer        
         public ComboBox _devicelist;       //device list
         private bool _initialized;          //initialized flag
-        private int devindex = 0;           //used device index       
+        private int devindex = 0;           //used device index      
 
+        public float multiplier = 1;
         public int _lines = 20;
 
         public Analizer()
@@ -103,8 +104,9 @@ namespace CSharpNation
                         if (peak < _fft[1 + b0]) peak = _fft[1 + b0];
                     }
 
-                    y = (int)(peak * 150 * 2);
-                    if (y > 300) y = 300;
+                    //y = (int)(peak * 150 * 2);
+                    y = (int)(peak * multiplier);
+                    //if (y > 300) y = 300;
                     if (y < 0) y = 0;
                     _spectrumdata.Add(y);
                 }

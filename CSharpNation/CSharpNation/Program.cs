@@ -24,9 +24,9 @@ namespace CSharpNation
 
             GameWindow Window = new GameWindow(Width, Height,
             new GraphicsMode(new ColorFormat(8, 8, 8, 0),
-            8, // Depth bits
-            8,  // Stencil bits
-            8   // FSAA samples
+            0, // Depth bits
+            0,  // Stencil bits
+            16   // FSAA samples
             ),
             "C#Nation Spectrum");
 

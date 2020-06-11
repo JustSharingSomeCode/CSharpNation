@@ -130,29 +130,5 @@ namespace CSharpNation {
                 this["Logo_Bottom_Offset"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool Beat_Detection {
-            get {
-                return ((bool)(this["Beat_Detection"]));
-            }
-            set {
-                this["Beat_Detection"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1.2")]
-        public double Beat_Sensibility {
-            get {
-                return ((double)(this["Beat_Sensibility"]));
-            }
-            set {
-                this["Beat_Sensibility"] = value;
-            }
-        }
     }
 }

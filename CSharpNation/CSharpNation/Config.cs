@@ -21,15 +21,15 @@ namespace CSharpNation
             Background_Change_Seconds = AppSettings.Default.Background_Change_Seconds;
             Auto_Change_Background = AppSettings.Default.Auto_Change_Background;
             Wave_Enhancements = AppSettings.Default.Wave_Enhancements;
-            Beat_Detection = AppSettings.Default.Beat_Detection;
-            Beat_Sensibility = AppSettings.Default.Beat_Sensibility;
+            //Beat_Detection = AppSettings.Default.Beat_Detection;
+            //Beat_Sensibility = AppSettings.Default.Beat_Sensibility;
 
             Logo_Top_Offset = AppSettings.Default.Logo_Top_Offset;
             Logo_Right_Offset = AppSettings.Default.Logo_Right_Offset;
             Logo_Bottom_Offset = AppSettings.Default.Logo_Bottom_Offset;
             Logo_Left_Offset = AppSettings.Default.Logo_Left_Offset;
 
-            WriteShortcuts();
+            //WriteShortcuts();
         }
 
         public enum Axis
@@ -47,8 +47,8 @@ namespace CSharpNation
         public int Background_Change_Seconds { get; set; }
         public bool Auto_Change_Background { get; set; }
         public bool Wave_Enhancements { get; set; }
-        public bool Beat_Detection { get; set; }
-        public double Beat_Sensibility { get; set; }
+        //public bool Beat_Detection { get; set; }
+        //public double Beat_Sensibility { get; set; }
 
         public bool EnableShortcuts { get; set; } = true;
 
@@ -114,7 +114,7 @@ namespace CSharpNation
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("     If True, Modifies The Wave To Create Round Peeks And Reduce Wave Jumps");
             Console.ResetColor();
-
+            /*
             Console.WriteLine(" 6) Beat Detection = {0}", Beat_Detection);
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("     If True, Modifies The Wave To Create An Special Effect When A Beat Is Detected");
@@ -124,24 +124,22 @@ namespace CSharpNation
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("     Sensibility To Beats, Only Works If 'Beat Detection' Is True");
             Console.ResetColor();
-
-            Console.WriteLine(" 8) Logo Offset");
+            */
+            Console.WriteLine(" 6) Logo Offset");
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("     Move The Logo, Make It Bigger Or Smaller");
             Console.ResetColor();
 
             Console.WriteLine("PRESS ESCAPE TO GO BACK");
 
-            ConsoleKey[] keysToCheck = new ConsoleKey[9];
+            ConsoleKey[] keysToCheck = new ConsoleKey[7];
             keysToCheck[0] = ConsoleKey.D1;
             keysToCheck[1] = ConsoleKey.D2;
             keysToCheck[2] = ConsoleKey.D3;
             keysToCheck[3] = ConsoleKey.D4;
-            keysToCheck[4] = ConsoleKey.D5;
+            keysToCheck[4] = ConsoleKey.D5;            
             keysToCheck[5] = ConsoleKey.D6;
-            keysToCheck[6] = ConsoleKey.D7;
-            keysToCheck[7] = ConsoleKey.D8;
-            keysToCheck[8] = ConsoleKey.Escape;
+            keysToCheck[6] = ConsoleKey.Escape;
 
             switch (KeyPressed(keysToCheck))
             {
@@ -164,16 +162,8 @@ namespace CSharpNation
                 case ConsoleKey.D5:
                     Change_Wave_Enhancements();
                     break;
-
+               
                 case ConsoleKey.D6:
-                    Change_Beat_Detection();
-                    break;
-
-                case ConsoleKey.D7:
-                    Change_Beat_Sensibility();
-                    break;
-
-                case ConsoleKey.D8:
                     AdjustLogoOffset();
                     break;
 
@@ -324,49 +314,7 @@ namespace CSharpNation
             }
 
             SaveSettings();
-        }
-
-        private void Change_Beat_Detection()
-        {
-            ShowChangeInstruction("-Beat Detection", " 1) True    2) False");
-
-            ConsoleKey[] keysToCheck = new ConsoleKey[2];
-            keysToCheck[0] = ConsoleKey.D1;
-            keysToCheck[1] = ConsoleKey.D2;
-
-            if (KeyPressed(keysToCheck) == ConsoleKey.D1)
-            {
-                Beat_Detection = true;
-            }
-            else
-            {
-                Beat_Detection = false;
-            }
-
-            SaveSettings();
-        }
-
-        private void Change_Beat_Sensibility()
-        {
-            ShowChangeInstruction("-Beat Sensibility", " Write A Decimal Number Higher Than 0 | 0 = Fully Sensitive");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("WRITE DECIMALS WITH ,");
-            Console.ResetColor();
-
-            try
-            {
-                double input = Convert.ToDouble(Console.ReadLine());
-
-                Beat_Sensibility = input;
-
-                SaveSettings();
-            }
-            catch
-            {
-                SettingsError("Please Write Only Numbers");
-                Change_Beat_Sensibility();
-            }
-        }
+        }        
 
         private void AdjustLogoOffset()
         {
@@ -448,9 +396,7 @@ namespace CSharpNation
             AppSettings.Default.N_Particles = N_Particles;
             AppSettings.Default.Background_Change_Seconds = Background_Change_Seconds;
             AppSettings.Default.Auto_Change_Background = Auto_Change_Background;
-            AppSettings.Default.Wave_Enhancements = Wave_Enhancements;
-            AppSettings.Default.Beat_Detection = Beat_Detection;
-            AppSettings.Default.Beat_Sensibility = Beat_Sensibility;
+            AppSettings.Default.Wave_Enhancements = Wave_Enhancements;            
 
             AppSettings.Default.Logo_Top_Offset = Logo_Top_Offset;
             AppSettings.Default.Logo_Right_Offset = Logo_Right_Offset;

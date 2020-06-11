@@ -28,6 +28,7 @@ namespace CSharpNation
             GL.BindTexture(TextureTarget.Texture2D, id);
 
             Bitmap bmp = new Bitmap("Resources/" + file);
+            
             BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width / DivideImg, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);

@@ -58,7 +58,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>AppSettings.settings</DependentUpon>
     </Compile>
-    <Compile Include="BeatDetection.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Particles.cs" />

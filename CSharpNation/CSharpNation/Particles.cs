@@ -15,6 +15,7 @@ namespace CSharpNation
 
         private int maxWidth;
         private int maxHeight;
+        private float sizeMultiplier = 1;
 
         public Particles(int Widht, int Height, Config config)
         {
@@ -41,7 +42,7 @@ namespace CSharpNation
                 opacity = Opacity;
                
                 xIncrement = X_Increment;
-                yIncrement = Y_Increment;                
+                yIncrement = Y_Increment;
             }
         }
 
@@ -72,7 +73,7 @@ namespace CSharpNation
             while (particlesList.Count < _config.N_Particles)
             {
                 Particle P = new Particle(new Vector2(random.Next((maxWidth / 2) - (maxHeight / 4), (maxWidth / 2) + (maxHeight / 4)), random.Next((maxHeight / 2) - (maxHeight / 4), (maxHeight / 2) + (maxHeight / 4)))
-                                            , random.Next(5, 20), texture, random.Next(50, 255), (float)(-1 * random.NextDouble()), (float)(random.Next(-1, 2) * random.NextDouble()));
+                                            , random.Next(5, 20) * sizeMultiplier, texture, random.Next(50, 255), (float)(-1 * random.NextDouble()), (float)(random.Next(-1, 2) * random.NextDouble()));
                 if (P.xIncrement > -0.5)
                 {
                     P.xIncrement = -0.5f;
@@ -153,6 +154,8 @@ namespace CSharpNation
         {
             maxWidth = Widht;
             maxHeight = Height;
+
+            sizeMultiplier = maxWidth / 950f;
 
             particlesList.Clear();
             particlesListMirror.Clear();
