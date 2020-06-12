@@ -20,16 +20,12 @@ namespace CSharpNation
             N_Particles = AppSettings.Default.N_Particles;
             Background_Change_Seconds = AppSettings.Default.Background_Change_Seconds;
             Auto_Change_Background = AppSettings.Default.Auto_Change_Background;
-            Wave_Enhancements = AppSettings.Default.Wave_Enhancements;
-            //Beat_Detection = AppSettings.Default.Beat_Detection;
-            //Beat_Sensibility = AppSettings.Default.Beat_Sensibility;
+            Wave_Enhancements = AppSettings.Default.Wave_Enhancements;            
 
             Logo_Top_Offset = AppSettings.Default.Logo_Top_Offset;
             Logo_Right_Offset = AppSettings.Default.Logo_Right_Offset;
             Logo_Bottom_Offset = AppSettings.Default.Logo_Bottom_Offset;
-            Logo_Left_Offset = AppSettings.Default.Logo_Left_Offset;
-
-            //WriteShortcuts();
+            Logo_Left_Offset = AppSettings.Default.Logo_Left_Offset;            
         }
 
         public enum Axis
@@ -46,9 +42,7 @@ namespace CSharpNation
         public int N_Particles { get; set; }
         public int Background_Change_Seconds { get; set; }
         public bool Auto_Change_Background { get; set; }
-        public bool Wave_Enhancements { get; set; }
-        //public bool Beat_Detection { get; set; }
-        //public double Beat_Sensibility { get; set; }
+        public bool Wave_Enhancements { get; set; }       
 
         public bool EnableShortcuts { get; set; } = true;
 
@@ -78,7 +72,10 @@ namespace CSharpNation
             Console.WriteLine(" F = Fullscreen");
             Console.WriteLine(" N = Next background");
             Console.WriteLine(" B = Previous background");
-            Console.WriteLine(" L = Select Background By Index");
+            Console.WriteLine(" L = Select background by Index");
+            Console.WriteLine(" C = Change actual background load mode");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("     Select if you want a split, full, or inverted background");
         }
 
         public void WriteSettings()
@@ -114,17 +111,7 @@ namespace CSharpNation
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("     If True, Modifies The Wave To Create Round Peeks And Reduce Wave Jumps");
             Console.ResetColor();
-            /*
-            Console.WriteLine(" 6) Beat Detection = {0}", Beat_Detection);
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("     If True, Modifies The Wave To Create An Special Effect When A Beat Is Detected");
-            Console.ResetColor();
-
-            Console.WriteLine(" 7) Beat Sensibility = {0}", Beat_Sensibility);
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("     Sensibility To Beats, Only Works If 'Beat Detection' Is True");
-            Console.ResetColor();
-            */
+            
             Console.WriteLine(" 6) Logo Offset");
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("     Move The Logo, Make It Bigger Or Smaller");
@@ -444,5 +431,48 @@ namespace CSharpNation
         }
 
         #endregion
+
+        public Texture.ImageMode SelectImageMode()
+        {
+            ShowChangeInstruction("-Change Image mode", " Write the number of the Image Mode you want for the actual background, press ESC to go back");
+            Console.WriteLine();
+            Console.WriteLine("1) Full");
+            Console.WriteLine("2) Split");
+            Console.WriteLine("3) invertSplit");
+            Console.WriteLine("4) fullSplit");
+            Console.WriteLine("5) invertFullSplit");
+            Console.WriteLine("6) splitSecondHalf");
+            Console.WriteLine("7) invertSplitSecondHalf");
+
+            ConsoleKey[] keysToCheck = new ConsoleKey[8];
+            keysToCheck[0] = ConsoleKey.D1;
+            keysToCheck[1] = ConsoleKey.D2;
+            keysToCheck[2] = ConsoleKey.D3;
+            keysToCheck[3] = ConsoleKey.D4;
+            keysToCheck[4] = ConsoleKey.D5;
+            keysToCheck[5] = ConsoleKey.D6;
+            keysToCheck[6] = ConsoleKey.D7;
+            keysToCheck[7] = ConsoleKey.Escape;
+
+            switch (KeyPressed(keysToCheck))
+            {
+                case ConsoleKey.D1:
+                    return Texture.ImageMode.full;
+                case ConsoleKey.D2:
+                    return Texture.ImageMode.split;
+                case ConsoleKey.D3:
+                    return Texture.ImageMode.invertSplit;
+                case ConsoleKey.D4:
+                    return Texture.ImageMode.fullSplit;
+                case ConsoleKey.D5:
+                    return Texture.ImageMode.invertFullSplit;
+                case ConsoleKey.D6:
+                    return Texture.ImageMode.splitSecondHalf;
+                case ConsoleKey.D7:
+                    return Texture.ImageMode.invertSplitSecondHalf;                    
+            }
+            
+            return Texture.ImageMode.notFound;
+        }
     }
 }

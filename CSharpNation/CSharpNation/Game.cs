@@ -27,7 +27,7 @@ namespace CSharpNation
         private List<double> tempSpectrumData;
         private List<Particles.Particle> particlesList = new List<Particles.Particle>();
         
-        private double Radius;
+        private float Radius;
         private int BackgroundTexture;
         private int LogoTexture;
         private int ParticleTexture;
@@ -35,9 +35,10 @@ namespace CSharpNation
         private bool restoreBackground_Dim = false;
         private bool startAnimation = false;
         private bool reverseAnimation = false;
+        private bool IsFullBackground = false;
 
         private float rate = 10f;
-        private double waveMultiplier = 0.5;
+        private float waveMultiplier = 0.5f;
 
         private KeyboardState actualKeyboardState, oldKeyboardState;       
 
@@ -50,6 +51,14 @@ namespace CSharpNation
 
             particles = new Particles(window.Width, window.Height, _config);
             Console.WriteLine("Loading resources...");
+
+            if(!File.Exists("Resources\\BackgroundConfig.txt"))
+            {
+                using (StreamWriter sw = File.CreateText("Resources\\BackgroundConfig.txt"))
+                {
+                    sw.Close();
+                }                    
+            }
 
             if (Directory.Exists("Resources\\Backgrounds"))
             {
@@ -80,14 +89,14 @@ namespace CSharpNation
                 BackgroundTexture = _texture.GetBackgroundByIndex(0);
             }
 
-            if (!LoadTexture(ref LogoTexture, "Logo.jpg"))
+            if (!LoadTexture(ref LogoTexture, "Logo.jpg", Texture.ImageMode.fullSplit))
             {
-                LoadTexture(ref LogoTexture, "Logo.png");
+                LoadTexture(ref LogoTexture, "Logo.png", Texture.ImageMode.fullSplit);
             }
 
-            if (!LoadTexture(ref ParticleTexture, "particle.jpg"))
+            if (!LoadTexture(ref ParticleTexture, "particle.jpg", Texture.ImageMode.fullSplit))
             {
-                LoadTexture(ref ParticleTexture, "particle.png");
+                LoadTexture(ref ParticleTexture, "particle.png", Texture.ImageMode.fullSplit);
             }
 
             _config.WriteShortcuts();
@@ -99,12 +108,18 @@ namespace CSharpNation
             window.Load += OnDisplay;
             window.Resize += OnResize;
             window.RenderFrame += OnRender;
-            window.UpdateFrame += OnUpdate;            
+            window.UpdateFrame += OnUpdate;
+            window.Closing += OnClosing;
             
             window.Run(60, 60);
         }
 
-        void OnDisplay(object sender, EventArgs e)
+        private void OnClosing(object sender, EventArgs e)
+        {
+            _texture.SaveBackgroundConfig();
+        }
+
+        private void OnDisplay(object sender, EventArgs e)
         {
             GL.ClearColor(0, 0, 0, 255);
         }
@@ -179,18 +194,25 @@ namespace CSharpNation
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             float AspectRatio = 9f / 16f;
-            double increaseX = (Radius - (window.Height / 4)) / 1.5;
-            double increaseY = AspectRatio * increaseX;
+            float increaseX = (Radius - (window.Height / 4f)) / 1.5f;
+            float increaseY = AspectRatio * increaseX;
 
-            DrawTexture(BackgroundTexture, 0 - increaseX, 0 - increaseY, window.Width / 2, window.Height + increaseY, _config.GetAlpha(), 255, 255, 255);//(Radius - (window.Height / 4))
-            DrawTexture(BackgroundTexture, window.Width + increaseX, 0 - increaseY, window.Width / 2, window.Height + increaseY, _config.GetAlpha(), 255, 255, 255);
+            if (IsFullBackground)
+            {
+                DrawTexture(BackgroundTexture, 0 - increaseX, 0 - increaseY, window.Width + increaseX, window.Height + increaseY, _config.GetAlpha(), 255, 255, 255);
+            }
+            else
+            {
+                DrawTexture(BackgroundTexture, 0 - increaseX, 0 - increaseY, window.Width / 2, window.Height + increaseY, _config.GetAlpha(), 255, 255, 255);//(Radius - (window.Height / 4))
+                DrawTexture(BackgroundTexture, window.Width + increaseX, 0 - increaseY, window.Width / 2, window.Height + increaseY, _config.GetAlpha(), 255, 255, 255);
+            }
 
             for (int i = 0; i < particlesList.Count; i++)
             {
-                double x = particlesList[i].position.X - (particlesList[i].radius / 2);
-                double y = particlesList[i].position.Y - (particlesList[i].radius / 2);
-                double xMax = particlesList[i].position.X + (particlesList[i].radius / 2);
-                double yMax = particlesList[i].position.Y + (particlesList[i].radius / 2);
+                float x = particlesList[i].position.X - (particlesList[i].radius / 2);
+                float y = particlesList[i].position.Y - (particlesList[i].radius / 2);
+                float xMax = particlesList[i].position.X + (particlesList[i].radius / 2);
+                float yMax = particlesList[i].position.Y + (particlesList[i].radius / 2);
 
                 DrawTexture(particlesList[i].texture, x, y, xMax, yMax, particlesList[i].opacity, 255, 255, 255);
             }
@@ -212,7 +234,7 @@ namespace CSharpNation
             */
 
             DrawPrincipalCircle();            
-            DrawTexture(LogoTexture, (window.Width * _config.Logo_Left_Offset) - Radius, (window.Height * _config.Logo_Bottom_Offset) - Radius, (window.Width * _config.Logo_Right_Offset) + Radius, (window.Height * _config.Logo_Top_Offset) + Radius, 255, 255, 255, 255);
+            DrawTexture(LogoTexture, (window.Width * (float)_config.Logo_Left_Offset) - Radius, (window.Height * (float)_config.Logo_Bottom_Offset) - Radius, (window.Width * (float)_config.Logo_Right_Offset) + Radius, (window.Height * (float)_config.Logo_Top_Offset) + Radius, 255, 255, 255, 255);
 
             window.SwapBuffers();
         }                                  
@@ -264,7 +286,17 @@ namespace CSharpNation
                 {
                     BackgroundTexture = _texture.GetBackgroundByIndex(_config.SelectBackground(_texture.GetBackgroundsList(), _texture.BackgroundIndex));
                     _config.WriteShortcuts();
-                }                
+                    IsFullBackground = _texture.IsFullBackgroundIndex();
+                }
+
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.C))
+                {
+                    _config.Auto_Change_Background = false;
+                    BackgroundTexture = _texture.ChangeBackgroundImageMode(_config.SelectImageMode());
+                    _config.WriteShortcuts();
+                    IsFullBackground = _texture.IsFullBackgroundIndex();
+                    _config.Auto_Change_Background = true;
+                }
             }
             else
             {
@@ -555,7 +587,7 @@ namespace CSharpNation
 
             for (int i = 0; i < Data.Count; i++)
             {
-                Radius += Data[i] * waveMultiplier;
+                Radius += (float)Data[i] * waveMultiplier;
             }
 
             Radius = ((Radius / Data.Count - 1) * 2) + (window.Height / 4) + 1;            
@@ -565,11 +597,11 @@ namespace CSharpNation
 
         #region Textures
 
-        private bool LoadTexture(ref int texture, string fileName, int DivideImg = 1)
+        private bool LoadTexture(ref int texture, string fileName, Texture.ImageMode imageMode)
         {
             try
             {
-                texture = _texture.LoadTexture(fileName, DivideImg);
+                texture = _texture.LoadTexture(fileName, imageMode);
                 return true;
             }
             catch
@@ -578,7 +610,7 @@ namespace CSharpNation
             }
         }
 
-        private void DrawTexture(int texture, double x, double y, double xMax, double yMax, int a, int r, int g, int b)
+        private void DrawTexture(int texture, float x, float y, float xMax, float yMax, int a, int r, int g, int b)
         {
             GL.Enable(EnableCap.Texture2D);
             GL.BindTexture(TextureTarget.Texture2D, texture);
@@ -619,6 +651,8 @@ namespace CSharpNation
                     BackgroundTexture = _texture.NextBackground();
                 }                
                 restoreBackground_Dim = true;
+
+                IsFullBackground = _texture.IsFullBackgroundIndex();
             }
 
             if (!restoreBackground_Dim)
