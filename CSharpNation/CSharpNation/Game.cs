@@ -36,9 +36,11 @@ namespace CSharpNation
         private bool startAnimation = false;
         private bool reverseAnimation = false;
         private bool IsFullBackground = false;
+        private bool scaleBackground = false;
 
         private float rate = 10f;
         private float waveMultiplier = 0.5f;
+        private float scaleFactor = 0;
 
         private KeyboardState actualKeyboardState, oldKeyboardState;       
 
@@ -99,6 +101,14 @@ namespace CSharpNation
                 LoadTexture(ref ParticleTexture, "particle.png", Texture.ImageMode.fullSplit);
             }
 
+            IsFullBackground = _texture.IsFullBackgroundIndex();            
+            
+            scaleBackground = _texture.ScaleBackground(_texture.BackgroundIndex);
+            if (scaleBackground)
+            {
+                scaleFactor = _texture.GetBackgroundScale(_texture.BackgroundIndex);
+            }
+            
             _config.WriteShortcuts();
             Start();
         }
@@ -161,6 +171,7 @@ namespace CSharpNation
 
             if (startAnimation)
             {
+                _config.UpdateCount = 0;
                 BackgroundChangeAnimation();
             }           
             
@@ -196,6 +207,12 @@ namespace CSharpNation
             float AspectRatio = 9f / 16f;
             float increaseX = (Radius - (window.Height / 4f)) / 1.5f;
             float increaseY = AspectRatio * increaseX;
+            float scale = 0;
+
+            if(scaleBackground)
+            {
+                scale = Math.Abs(((((window.Width / 2) + increaseY) * scaleFactor) - window.Height) / 2);                
+            }
 
             if (IsFullBackground)
             {
@@ -203,8 +220,8 @@ namespace CSharpNation
             }
             else
             {
-                DrawTexture(BackgroundTexture, 0 - increaseX, 0 - increaseY, window.Width / 2, window.Height + increaseY, _config.GetAlpha(), 255, 255, 255);//(Radius - (window.Height / 4))
-                DrawTexture(BackgroundTexture, window.Width + increaseX, 0 - increaseY, window.Width / 2, window.Height + increaseY, _config.GetAlpha(), 255, 255, 255);
+                DrawTexture(BackgroundTexture, 0 - increaseX, 0 - increaseY - scale, window.Width / 2, window.Height + increaseY + scale, _config.GetAlpha(), 255, 255, 255);//(Radius - (window.Height / 4))
+                DrawTexture(BackgroundTexture, window.Width + increaseX, 0 - increaseY - scale, window.Width / 2, window.Height + increaseY + scale, _config.GetAlpha(), 255, 255, 255);
             }
 
             for (int i = 0; i < particlesList.Count; i++)
@@ -296,6 +313,12 @@ namespace CSharpNation
                     _config.WriteShortcuts();
                     IsFullBackground = _texture.IsFullBackgroundIndex();
                     _config.Auto_Change_Background = true;
+                }
+
+                if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.S))
+                {
+                    BackgroundTexture = _texture.UpdateScaleMode(_texture.BackgroundIndex, !scaleBackground);
+                    scaleBackground = !scaleBackground;
                 }
             }
             else
@@ -653,6 +676,13 @@ namespace CSharpNation
                 restoreBackground_Dim = true;
 
                 IsFullBackground = _texture.IsFullBackgroundIndex();
+                
+                scaleBackground = _texture.ScaleBackground(_texture.BackgroundIndex);
+                if(scaleBackground)
+                {
+                    scaleFactor = _texture.GetBackgroundScale(_texture.BackgroundIndex);
+                }
+                
             }
 
             if (!restoreBackground_Dim)

@@ -30,6 +30,7 @@ namespace CSharpNation
         private List<string> TexturesName = new List<string>();
         private List<string> backgroundConfig = new List<string>();
         private List<int> fullBackgroundIndex = new List<int>();
+        private List<float> backgroundScale = new List<float>();
 
         public int BackgroundIndex { get; set; } = 0;        
 
@@ -48,6 +49,20 @@ namespace CSharpNation
             if((bmp.Width < bmp.Height && !handled) || imageMode == ImageMode.full)
             {
                 imageMode = ImageMode.fullSplit;
+            }            
+
+            if(imageMode == ImageMode.notFound)
+            {
+                imageMode = ImageMode.fullSplit;
+            }
+
+            if(imageMode == ImageMode.split || imageMode == ImageMode.invertSplit || imageMode == ImageMode.splitSecondHalf || imageMode == ImageMode.invertSplitSecondHalf)
+            {
+                backgroundScale.Add((float)bmp.Height / (float)(bmp.Width / 2));
+            }
+            else
+            {
+                backgroundScale.Add((float)bmp.Height / (float)bmp.Width);
             }
             
             BitmapData data = new BitmapData();
@@ -107,6 +122,62 @@ namespace CSharpNation
             return id;
         }
 
+        public float GetBackgroundScale(int index)
+        {
+            return backgroundScale[index];
+        }
+
+        public bool ScaleBackground(int index)
+        {
+            for(int i = 0; i < backgroundConfig.Count; i++)
+            {
+                if(backgroundConfig[i].Contains(TexturesName[index]))
+                {
+                    string value = backgroundConfig[i].Split('|')[2];
+
+                    if(value == true.ToString())
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public int UpdateScaleMode(int index, bool enabled)
+        {
+            ImageMode imageMode = SearchConfig(TexturesName[index]);
+            int configIndex = -1;
+
+            for (int i = 0; i < backgroundConfig.Count; i++)
+            {
+                if (backgroundConfig[i].Contains(TexturesName[index]))
+                {
+                    configIndex = i;
+                    break;
+                }
+            }
+
+            if(configIndex < 0)
+            {
+                AddBackgroundConfig(imageMode);
+                return UpdateScaleMode(index, enabled);
+            }
+
+            string actualConfig = backgroundConfig[configIndex];                        
+
+            backgroundConfig[configIndex] = actualConfig.Split('|')[0] + "|" + actualConfig.Split('|')[1] + "|" + enabled.ToString();            
+
+            TexturesLoaded[index] = LoadTexture("Backgrounds/" + TexturesName[index], imageMode, true);
+
+            return TexturesLoaded[index];
+        }
+
         private void LoadBackgroundConfig()
         {
             backgroundConfig.Clear();
@@ -134,7 +205,7 @@ namespace CSharpNation
                     backgroundConfig.RemoveAt(i);
                 }
             }
-            backgroundConfig.Add(TexturesName[BackgroundIndex] + "|" + imageMode.ToString());
+            backgroundConfig.Add(TexturesName[BackgroundIndex] + "|" + imageMode.ToString() + "|" + false.ToString());
         }
 
         private ImageMode SearchConfig(string fileName)
@@ -194,8 +265,7 @@ namespace CSharpNation
                 else
                 {
                     if(imageMode == ImageMode.full)
-                    {
-                        //imageMode = ImageMode.fullSplit;
+                    {                        
                         fullBackgroundIndex.Add(TexturesLoaded.Count);
                     }
 
@@ -232,12 +302,7 @@ namespace CSharpNation
         {
             return LoadTexture("Backgrounds/" + TexturesName[BackgroundIndex], ImageMode.invertSplitSecondHalf);
         }
-        /*
-        public int InvertBackground()
-        {
-
-        }
-        */
+        
         public int GetBackgroundByIndex(int index)
         {
             BackgroundIndex = index;

@@ -103,10 +103,8 @@ namespace CSharpNation
                     {
                         if (peak < _fft[1 + b0]) peak = _fft[1 + b0];
                     }
-
-                    //y = (int)(peak * 150 * 2);
-                    y = (int)(peak * multiplier);
-                    //if (y > 300) y = 300;
+                    
+                    y = (int)(peak * multiplier);                    
                     if (y < 0) y = 0;
                     _spectrumdata.Add(y);
                 }

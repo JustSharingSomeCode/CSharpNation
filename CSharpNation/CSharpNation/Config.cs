@@ -76,6 +76,10 @@ namespace CSharpNation
             Console.WriteLine(" C = Change actual background load mode");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("     Select if you want a split, full, or inverted background");
+            Console.ResetColor();
+            Console.WriteLine(" S = Change actual background scale mode");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("     Use this if you want to maintain the background proportions");
         }
 
         public void WriteSettings()
