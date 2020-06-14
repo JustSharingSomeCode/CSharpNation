@@ -84,7 +84,7 @@ namespace CSharpNation
                 case ImageMode.invertSplit:
 
                     bmp.RotateFlip(RotateFlipType.RotateNoneFlipX);
-                    data = bmp.LockBits(new Rectangle(0, 0, bmp.Width / 2, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    data = bmp.LockBits(new Rectangle(bmp.Width / 2, 0, bmp.Width / 2, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
                     break;
 

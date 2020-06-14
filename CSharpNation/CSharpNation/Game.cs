@@ -304,6 +304,11 @@ namespace CSharpNation
                     BackgroundTexture = _texture.GetBackgroundByIndex(_config.SelectBackground(_texture.GetBackgroundsList(), _texture.BackgroundIndex));
                     _config.WriteShortcuts();
                     IsFullBackground = _texture.IsFullBackgroundIndex();
+                    scaleBackground = _texture.ScaleBackground(_texture.BackgroundIndex);
+                    if (scaleBackground)
+                    {
+                        scaleFactor = _texture.GetBackgroundScale(_texture.BackgroundIndex);
+                    }
                 }
 
                 if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.C))
