@@ -38,11 +38,14 @@ namespace CSharpNation
         private bool IsFullBackground = false;
         private bool scaleBackground = false;
 
+        private float aspectRatio = 9f / 16f;
         private float rate = 10f;
         private float waveMultiplier = 0.5f;
         private float scaleFactor = 0;
 
-        private KeyboardState actualKeyboardState, oldKeyboardState;       
+        private float increaseY, increaseX, scale;
+
+        private KeyboardState actualKeyboardState, oldKeyboardState;
 
         public Game(GameWindow _window)
         {
@@ -54,12 +57,12 @@ namespace CSharpNation
             particles = new Particles(window.Width, window.Height, _config);
             Console.WriteLine("Loading resources...");
 
-            if(!File.Exists("Resources\\BackgroundConfig.txt"))
+            if (!File.Exists("Resources\\BackgroundConfig.txt"))
             {
                 using (StreamWriter sw = File.CreateText("Resources\\BackgroundConfig.txt"))
                 {
                     sw.Close();
-                }                    
+                }
             }
 
             if (Directory.Exists("Resources\\Backgrounds"))
@@ -88,7 +91,7 @@ namespace CSharpNation
 
                 _texture.LoadBackgrounds(Backgrounds);
 
-                BackgroundTexture = _texture.GetBackgroundByIndex(0);
+                //BackgroundTexture = _texture.GetBackgroundByIndex(0);
             }
 
             if (!LoadTexture(ref LogoTexture, "Logo.jpg", Texture.ImageMode.fullSplit))
@@ -99,18 +102,27 @@ namespace CSharpNation
             if (!LoadTexture(ref ParticleTexture, "particle.jpg", Texture.ImageMode.fullSplit))
             {
                 LoadTexture(ref ParticleTexture, "particle.png", Texture.ImageMode.fullSplit);
-            }
+            }                        
 
-            IsFullBackground = _texture.IsFullBackgroundIndex();            
-            
-            scaleBackground = _texture.ScaleBackground(_texture.BackgroundIndex);
-            if (scaleBackground)
+            if (_texture.HasTexturesLoaded())
             {
-                scaleFactor = _texture.GetBackgroundScale(_texture.BackgroundIndex);
+                _config.WriteShortcuts();
+
+                _texture.WriteErrors();
+
+                UpdateBackgroundScale();
+                BackgroundTexture = _texture.GetBackgroundByIndex(0);
+
+                Start();
             }
-            
-            _config.WriteShortcuts();
-            Start();
+            else
+            {
+                _texture.WriteErrors();
+
+                Console.WriteLine();
+                Console.WriteLine("No background has been loaded... Press a key to close");
+                Console.ReadKey(true);
+            }
         }
 
         private void Start()
@@ -197,26 +209,34 @@ namespace CSharpNation
 
             particlesList = particles.GetParticlesList();
 
-            replay.Push(catmullRomList);           
+            replay.Push(catmullRomList);
+
+            increaseX = (Radius - (window.Height / 4f)) / 1.5f;
+            increaseY = aspectRatio * increaseX;
+            scale = 0;
+
+            if (scaleBackground)
+            {
+                if (IsFullBackground)
+                {
+                    scale = Math.Abs((((window.Width + increaseY) * scaleFactor) - window.Height) / 2);
+                }
+                else
+                {
+                    scale = Math.Abs(((((window.Width / 2) + increaseY) * scaleFactor) - window.Height) / 2);
+                }
+            }
+
+            //Console.WriteLine(tempSpectrumData[0]);
         }
 
         private void OnRender(object sender, EventArgs e)
         {
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            float AspectRatio = 9f / 16f;
-            float increaseX = (Radius - (window.Height / 4f)) / 1.5f;
-            float increaseY = AspectRatio * increaseX;
-            float scale = 0;
-
-            if(scaleBackground)
-            {
-                scale = Math.Abs(((((window.Width / 2) + increaseY) * scaleFactor) - window.Height) / 2);                
-            }
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);           
 
             if (IsFullBackground)
             {
-                DrawTexture(BackgroundTexture, 0 - increaseX, 0 - increaseY, window.Width + increaseX, window.Height + increaseY, _config.GetAlpha(), 255, 255, 255);
+                DrawTexture(BackgroundTexture, 0 - increaseX, 0 - increaseY - scale, window.Width + increaseX, window.Height + increaseY + scale, _config.GetAlpha(), 255, 255, 255);
             }
             else
             {
@@ -268,6 +288,11 @@ namespace CSharpNation
             oldKeyboardState = actualKeyboardState;
             actualKeyboardState = Keyboard.GetState();
 
+            if(actualKeyboardState == oldKeyboardState)
+            {
+                return;
+            }
+
             if (_config.EnableShortcuts)
             {
                 if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.F))
@@ -286,12 +311,12 @@ namespace CSharpNation
                 if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.B))
                 {
                     reverseAnimation = true;
-                    startAnimation = true;
+                    startAnimation = true;                    
                 }
 
                 if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.N))
                 {
-                    startAnimation = true;
+                    startAnimation = true;                    
                 }
 
                 if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.O))
@@ -303,12 +328,8 @@ namespace CSharpNation
                 {
                     BackgroundTexture = _texture.GetBackgroundByIndex(_config.SelectBackground(_texture.GetBackgroundsList(), _texture.BackgroundIndex));
                     _config.WriteShortcuts();
-                    IsFullBackground = _texture.IsFullBackgroundIndex();
-                    scaleBackground = _texture.ScaleBackground(_texture.BackgroundIndex);
-                    if (scaleBackground)
-                    {
-                        scaleFactor = _texture.GetBackgroundScale(_texture.BackgroundIndex);
-                    }
+
+                    UpdateBackgroundScale();
                 }
 
                 if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.C))
@@ -515,7 +536,7 @@ namespace CSharpNation
         }
 
         private void GenerateRoundPeeks()
-        {
+        {            
             for (int i = 1; i < tempSpectrumData.Count - 2; i++)
             {
                 if (tempSpectrumData[i] > tempSpectrumData[i + 1] && tempSpectrumData[i] > tempSpectrumData[i - 1])
@@ -537,7 +558,7 @@ namespace CSharpNation
                 {
                     tempSpectrumData[i] = (tempSpectrumData[i + 1] + tempSpectrumData[i - 1]) / 3.5;
                 }
-            }
+            }            
         }
 
         private void DrawWave(List<Vector2> catmullRomList, Color C, bool glow = false, int alpha = 0)
@@ -587,14 +608,15 @@ namespace CSharpNation
         #region Circles
 
         private void DrawCircle(double X, double Y, double Radio, Color C)
-        {
+        {            
             GL.Color3(C);
-            GL.Begin(PrimitiveType.TriangleFan);
+            GL.Begin(PrimitiveType.Polygon);
 
             for (int i = 0; i <= 360; i++)
             {
-                double PosX = X + (Math.Sin(i) * Radio);
-                double PosY = Y + (Math.Cos(i) * Radio);
+                double rads = Math.PI * i / 180;
+                double PosX = X + (Math.Sin(rads) * Radio);
+                double PosY = Y + (Math.Cos(rads) * Radio);
 
                 GL.Vertex2(PosX, PosY);
             }
@@ -667,8 +689,8 @@ namespace CSharpNation
 
         private void BackgroundChangeAnimation()
         {
-            if (_config.ActualBackground_Dim <= 0)
-            {
+            if (_config.ActualBackground_Dim <= 0 && !restoreBackground_Dim)
+            {                
                 if (reverseAnimation)
                 {
                     BackgroundTexture = _texture.PreviousBackground();
@@ -680,14 +702,7 @@ namespace CSharpNation
                 }                
                 restoreBackground_Dim = true;
 
-                IsFullBackground = _texture.IsFullBackgroundIndex();
-                
-                scaleBackground = _texture.ScaleBackground(_texture.BackgroundIndex);
-                if(scaleBackground)
-                {
-                    scaleFactor = _texture.GetBackgroundScale(_texture.BackgroundIndex);
-                }
-                
+                UpdateBackgroundScale();
             }
 
             if (!restoreBackground_Dim)
@@ -703,9 +718,18 @@ namespace CSharpNation
                 else
                 {
                     restoreBackground_Dim = false;
-                    startAnimation = false;
+                    startAnimation = false;                    
                 }
             }
+        }
+
+        private void UpdateBackgroundScale()
+        {
+            IsFullBackground = _texture.IsFullBackgroundIndex();
+
+            scaleBackground = _texture.ScaleBackground(_texture.BackgroundIndex);
+
+            scaleFactor = _texture.GetBackgroundScale(_texture.BackgroundIndex);
         }
 
         #endregion

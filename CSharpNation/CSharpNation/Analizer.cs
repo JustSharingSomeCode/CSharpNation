@@ -90,21 +90,21 @@ namespace CSharpNation
             if (ret < -1) { return null; }
             else
             {
-                int x, y;
+                int x;
+                double y;
                 int b0 = 0;
 
                 for (x = 0; x < _lines; x++)
                 {
-                    float peak = 0;
-                    int b1 = (int)Math.Pow(2, x * 10.0 / (_lines - 1));
-                    if (b1 > 1023) b1 = 1023;
+                    double peak = 0;
+                    int b1 = (int)Math.Pow(2, x * 10.0 / (_lines - 1));                    
                     if (b1 <= b0) b1 = b0 + 1;
                     for (; b0 < b1; b0++)
                     {
                         if (peak < _fft[1 + b0]) peak = _fft[1 + b0];
                     }
                     
-                    y = (int)(peak * multiplier);                    
+                    y = peak * multiplier;
                     if (y < 0) y = 0;
                     _spectrumdata.Add(y);
                 }

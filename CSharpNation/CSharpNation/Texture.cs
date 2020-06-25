@@ -31,8 +31,9 @@ namespace CSharpNation
         private List<string> backgroundConfig = new List<string>();
         private List<int> fullBackgroundIndex = new List<int>();
         private List<float> backgroundScale = new List<float>();
+        public List<string> errors = new List<string>();
 
-        public int BackgroundIndex { get; set; } = 0;        
+        public int BackgroundIndex { get; set; } = 0;
 
         public int LoadTexture(string file, ImageMode imageMode, bool handled = false)
         {
@@ -40,13 +41,13 @@ namespace CSharpNation
             {
                 throw new FileNotFoundException("Archivo no encontrado");
             }
-
+           
             int id = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, id);
-
-            Bitmap bmp = new Bitmap("Resources/" + file);
             
-            if((bmp.Width < bmp.Height && !handled) || imageMode == ImageMode.full)
+            Bitmap bmp = new Bitmap("Resources/" + file);
+
+            if ((bmp.Width < bmp.Height && !handled) || imageMode == ImageMode.full)
             {
                 imageMode = ImageMode.fullSplit;
             }            
@@ -119,11 +120,13 @@ namespace CSharpNation
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
+            bmp.Dispose();
+
             return id;
         }
 
         public float GetBackgroundScale(int index)
-        {
+        {           
             return backgroundScale[index];
         }
 
@@ -132,7 +135,7 @@ namespace CSharpNation
             for(int i = 0; i < backgroundConfig.Count; i++)
             {
                 if(backgroundConfig[i].Contains(TexturesName[index]))
-                {
+                {                    
                     string value = backgroundConfig[i].Split('|')[2];
 
                     if(value == true.ToString())
@@ -256,23 +259,30 @@ namespace CSharpNation
 
             for (int i = 0; i < Paths.Length; i++)
             {
-                ImageMode imageMode = SearchConfig(Paths[i]);
+                try
+                {
+                    ImageMode imageMode = SearchConfig(Paths[i]);
 
-                if (imageMode == ImageMode.notFound)
-                {
-                    TexturesLoaded.Add(LoadTexture("Backgrounds/" + Paths[i], ImageMode.split));
-                }
-                else
-                {
-                    if(imageMode == ImageMode.full)
-                    {                        
-                        fullBackgroundIndex.Add(TexturesLoaded.Count);
+                    if (imageMode == ImageMode.notFound)
+                    {
+                        TexturesLoaded.Add(LoadTexture("Backgrounds/" + Paths[i], ImageMode.split));
+                    }
+                    else
+                    {
+                        if (imageMode == ImageMode.full)
+                        {
+                            fullBackgroundIndex.Add(TexturesLoaded.Count);
+                        }
+
+                        TexturesLoaded.Add(LoadTexture("Backgrounds/" + Paths[i], imageMode, true));
                     }
 
-                    TexturesLoaded.Add(LoadTexture("Backgrounds/" + Paths[i], imageMode, true));
+                    TexturesName.Add(Paths[i]);
                 }
-
-                TexturesName.Add(Paths[i]);
+                catch
+                {
+                    errors.Add("An error occurred while trying to load the image (" + Paths[i] + ")");
+                }
             }
         }
 
@@ -322,6 +332,17 @@ namespace CSharpNation
             }
             if (imageMode != ImageMode.notFound)
             {
+                if(imageMode != ImageMode.full)
+                {
+                    for(int i = 0; i < fullBackgroundIndex.Count; i++)
+                    {
+                        if(fullBackgroundIndex[i] == BackgroundIndex)
+                        {
+                            fullBackgroundIndex.RemoveAt(i);
+                        }
+                    }
+                }
+
                 TexturesLoaded[BackgroundIndex] = LoadTexture("Backgrounds/" + TexturesName[BackgroundIndex], imageMode, true);
                 AddBackgroundConfig(imageMode);                
                 return TexturesLoaded[BackgroundIndex];
@@ -348,6 +369,28 @@ namespace CSharpNation
         public void SaveBackgroundConfig()
         {
             WriteBackgroundConfig();
+        }
+
+        public bool HasTexturesLoaded()
+        {
+            if (TexturesLoaded.Count > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public void WriteErrors()
+        {            
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine();
+            for(int i = 0; i < errors.Count; i++)
+            {
+                Console.WriteLine(errors[i]);
+            }                       
         }
     }
 }
