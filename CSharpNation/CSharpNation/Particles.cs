@@ -116,7 +116,7 @@ namespace CSharpNation
         
         private void updateParticlesPosition(float aditionalVelocity)
         {
-            aditionalVelocity = Clamp(aditionalVelocity, 6, 0.5f);
+            aditionalVelocity = Clamp(aditionalVelocity, 8, 0.25f);
 
             for (int i = 0; i < particlesList.Count; i++)
             {

@@ -89,9 +89,7 @@ namespace CSharpNation
                     Backgrounds[i] = Path.GetFileName(Backgrounds[i]);
                 }
 
-                _texture.LoadBackgrounds(Backgrounds);
-
-                //BackgroundTexture = _texture.GetBackgroundByIndex(0);
+                _texture.LoadBackgrounds(Backgrounds);                
             }
 
             if (!LoadTexture(ref LogoTexture, "Logo.jpg", Texture.ImageMode.fullSplit))
@@ -157,7 +155,7 @@ namespace CSharpNation
             window.Height = (int)(window.Width * (9f / 16f));
             
             particles.UpdateWindowSize(window.Width, window.Height);
-            _analizer.multiplier = window.Height / 4 * 2;
+            _analizer.multiplier = window.Height / 2;
             rate = window.Width * 10 / 950;
         }
 
@@ -212,6 +210,7 @@ namespace CSharpNation
             replay.Push(catmullRomList);
 
             increaseX = (Radius - (window.Height / 4f)) / 1.5f;
+            //increaseX = 0;
             increaseY = aspectRatio * increaseX;
             scale = 0;
 
@@ -225,9 +224,7 @@ namespace CSharpNation
                 {
                     scale = Math.Abs(((((window.Width / 2) + increaseY) * scaleFactor) - window.Height) / 2);
                 }
-            }
-
-            //Console.WriteLine(tempSpectrumData[0]);
+            }            
         }
 
         private void OnRender(object sender, EventArgs e)
@@ -244,24 +241,35 @@ namespace CSharpNation
                 DrawTexture(BackgroundTexture, window.Width + increaseX, 0 - increaseY - scale, window.Width / 2, window.Height + increaseY + scale, _config.GetAlpha(), 255, 255, 255);
             }
 
+            float x, y, xMax, yMax;
             for (int i = 0; i < particlesList.Count; i++)
             {
-                float x = particlesList[i].position.X - (particlesList[i].radius / 2);
-                float y = particlesList[i].position.Y - (particlesList[i].radius / 2);
-                float xMax = particlesList[i].position.X + (particlesList[i].radius / 2);
-                float yMax = particlesList[i].position.Y + (particlesList[i].radius / 2);
+                x = particlesList[i].position.X - (particlesList[i].radius / 2);
+                y = particlesList[i].position.Y - (particlesList[i].radius / 2);
+                xMax = particlesList[i].position.X + (particlesList[i].radius / 2);
+                yMax = particlesList[i].position.Y + (particlesList[i].radius / 2);
 
                 DrawTexture(particlesList[i].texture, x, y, xMax, yMax, particlesList[i].opacity, 255, 255, 255);
             }
+            
+            DrawGlow(replay.GetCatmullRomPoints(3), Color.FromArgb(0, 255, 0));
+            DrawGlow(replay.GetCatmullRomPoints(5), Color.FromArgb(50, 205, 255));
+            DrawGlow(replay.GetCatmullRomPoints(7), Color.Blue);
+            DrawGlow(replay.GetCatmullRomPoints(8), Color.FromArgb(50, 50, 155));
+            DrawGlow(replay.GetCatmullRomPoints(9), Color.FromArgb(255, 100, 255));
+            DrawGlow(replay.GetCatmullRomPoints(10), Color.Red);
+            DrawGlow(replay.GetCatmullRomPoints(12), Color.FromArgb(255, 150, 0));
+            DrawGlow(replay.GetCatmullRomPoints(13), Color.Yellow);            
 
-            DrawWave(replay.GetCatmullRomPoints(0), Color.FromArgb(0, 255, 0), true);
-            DrawWave(replay.GetCatmullRomPoints(2), Color.FromArgb(50, 205, 255), true);
-            DrawWave(replay.GetCatmullRomPoints(4), Color.Blue);
-            DrawWave(replay.GetCatmullRomPoints(6), Color.FromArgb(50, 50, 155));
-            DrawWave(replay.GetCatmullRomPoints(8), Color.FromArgb(255, 100, 255), true);
+            DrawWave(replay.GetCatmullRomPoints(3), Color.FromArgb(0, 255, 0));
+            DrawWave(replay.GetCatmullRomPoints(5), Color.FromArgb(50, 205, 255));
+            DrawWave(replay.GetCatmullRomPoints(7), Color.Blue);
+            DrawWave(replay.GetCatmullRomPoints(8), Color.FromArgb(50, 50, 155));
+            DrawWave(replay.GetCatmullRomPoints(9), Color.FromArgb(255, 100, 255));
             DrawWave(replay.GetCatmullRomPoints(10), Color.Red);
-            DrawWave(replay.GetCatmullRomPoints(12), Color.Yellow, true);
-            DrawWave(catmullRomList, Color.White, true, 5);
+            DrawWave(replay.GetCatmullRomPoints(12), Color.FromArgb(255, 150, 0));
+            DrawWave(replay.GetCatmullRomPoints(13), Color.Yellow);
+            DrawWave(catmullRomList, Color.White);
 
             /*
             for (int i = 0; i < controlPointsList.Count; i++)
@@ -334,18 +342,29 @@ namespace CSharpNation
 
                 if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.C))
                 {
-                    _config.Auto_Change_Background = false;
+                    bool activateAcb = false;
+
+                    if (_config.Auto_Change_Background)
+                    {
+                        _config.Auto_Change_Background = false;
+                        activateAcb = true;
+                    }
+                    
                     BackgroundTexture = _texture.ChangeBackgroundImageMode(_config.SelectImageMode());
                     _config.WriteShortcuts();
-                    IsFullBackground = _texture.IsFullBackgroundIndex();
-                    _config.Auto_Change_Background = true;
+                    IsFullBackground = _texture.IsFullBackgroundIndex();    
+                    
+                    if(activateAcb)
+                    {
+                        _config.Auto_Change_Background = true;
+                    }
                 }
 
                 if (KeyPressed(actualKeyboardState, oldKeyboardState, Key.S))
                 {
                     BackgroundTexture = _texture.UpdateScaleMode(_texture.BackgroundIndex, !scaleBackground);
                     scaleBackground = !scaleBackground;
-                }
+                }                
             }
             else
             {
@@ -494,21 +513,22 @@ namespace CSharpNation
             }
             else
             {
-                GenerateRoundPeeks();                
+                GenerateRoundPeeks();
+
+                double dif;
                 
                 for(int i = 0; i < spectrumData.Count; i++)
                 {
-                    double dif = Math.Abs(spectrumData[i] - tempSpectrumData[i]);
+                    dif = Math.Abs(spectrumData[i] - tempSpectrumData[i]);
+
                     if (dif > rate)
                     {
                         if (spectrumData[i] > tempSpectrumData[i])
-                        {
-                            //spectrumData[i] -= rate;
+                        {                            
                             spectrumData[i] -= dif / 4;
                         }
                         else
-                        {
-                            //spectrumData[i] += rate;
+                        {                            
                             spectrumData[i] += dif / 4;
                         }
                     }
@@ -561,39 +581,72 @@ namespace CSharpNation
             }            
         }
 
-        private void DrawWave(List<Vector2> catmullRomList, Color C, bool glow = false, int alpha = 0)
+        private void DrawWave(List<Vector2> catmullRomList, Color C)
         {
             if (catmullRomList != null)
             {
                 GL.Enable(EnableCap.Blend);
                 GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
                 for (int i = 0; i < catmullRomList.Count - 1; i++)
-                {
+                {                    
                     GL.Begin(PrimitiveType.Triangles);
-
-                    if (glow)
-                    {
-                        GL.Color4(Color.FromArgb(alpha, C));
-                        GL.Vertex2(IncreaseVector(0.15f, catmullRomList[i]));
-                        GL.Color4(Color.FromArgb(255, C));
-                        GL.Vertex2(window.Width / 2, window.Height / 2);
-                        GL.Color4(Color.FromArgb(alpha, C));
-                        GL.Vertex2(IncreaseVector(0.15f, catmullRomList[i + 1]));
-                    }
 
                     GL.Color3(C);
                     GL.Vertex2(catmullRomList[i]);                    
                     GL.Vertex2(window.Width / 2, window.Height / 2);                    
                     GL.Vertex2(catmullRomList[i + 1]);                    
-
                     
-                    GL.End();
-                    
+                    GL.End();                   
                 }
                 GL.Disable(EnableCap.Blend);
             }
         }
 
+        private void DrawGlow(List<Vector2> replayList, Color C)
+        {
+            if (replayList != null)
+            {
+                GL.Enable(EnableCap.Blend);
+                GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
+                double dif;
+                int alpha = 0;
+
+                for (int i = 0; i < replayList.Count - 1; i++)
+                {
+                    dif = VectorLenght(replayList[i]) - Radius;
+
+                    alpha = (int)dif * 200 / 30;
+
+                    if (alpha > 200)
+                    {
+                        alpha = 200;
+                    }
+                    else if (alpha < 20)
+                    {
+                        alpha = 20;
+                    }
+
+                    GL.Begin(PrimitiveType.Quads);
+
+                    GL.Color4(Color.FromArgb(alpha, C));
+                    GL.Vertex2(replayList[i]);
+
+                    GL.Color4(Color.FromArgb(0, C));
+                    GL.Vertex2(IncreaseVector(0.10f, replayList[i]));
+
+                    GL.Color4(Color.FromArgb(0, C));
+                    GL.Vertex2(IncreaseVector(0.10f, replayList[i + 1]));
+
+                    GL.Color4(Color.FromArgb(alpha, C));
+                    GL.Vertex2(replayList[i + 1]);
+
+                    GL.End();
+                }
+                GL.Disable(EnableCap.Blend);
+            }
+        }
+        
         private Vector2 IncreaseVector(float multiplier, Vector2 vectorToIncrease)
         {
             Vector2 vectorToOrigin = new Vector2((vectorToIncrease.X - window.Width / 2) * multiplier, (vectorToIncrease.Y - window.Height / 2) * multiplier);
@@ -601,6 +654,11 @@ namespace CSharpNation
             Vector2 increasedVector = new Vector2(vectorToIncrease.X + vectorToOrigin.X, vectorToIncrease.Y + vectorToOrigin.Y);
             
             return increasedVector;
+        }
+        
+        private double VectorLenght(Vector2 vector)
+        {
+            return Math.Sqrt(Math.Pow(vector.X - window.Width / 2, 2) + Math.Pow(vector.Y - window.Height / 2, 2));
         }
 
         #endregion
@@ -612,11 +670,13 @@ namespace CSharpNation
             GL.Color3(C);
             GL.Begin(PrimitiveType.Polygon);
 
-            for (int i = 0; i <= 360; i++)
+            double rads, PosX, PosY;
+
+            for (int i = 0; i <= 360; i += 2)
             {
-                double rads = Math.PI * i / 180;
-                double PosX = X + (Math.Sin(rads) * Radio);
-                double PosY = Y + (Math.Cos(rads) * Radio);
+                rads = Math.PI * i / 180;
+                PosX = X + (Math.Sin(rads) * Radio);
+                PosY = Y + (Math.Cos(rads) * Radio);
 
                 GL.Vertex2(PosX, PosY);
             }
