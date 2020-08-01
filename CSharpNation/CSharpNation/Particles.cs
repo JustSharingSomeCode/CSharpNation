@@ -26,21 +26,54 @@ namespace CSharpNation
 
         public struct Particle
         {
+            public Vector2 initialPosition;
             public Vector2 position;
-            public float radius;
+
+            public float actualRadius;
+            public float initialRadius;
+            public float finalRadius;            
+
             public int texture;
             public int opacity;
                        
             public float xIncrement;
-            public float yIncrement;
+            public float yIncrement;            
 
-            public Particle(Vector2 Position, float Radius, int Texture, int Opacity, float X_Increment, float Y_Increment)
+            public Particle(Vector2 _position, float _initialRadius, float _finalRadius, int Texture, int Opacity, float X_Increment, float Y_Increment)
             {
-                position = Position;
-                radius = Radius;
+                initialPosition = _position;
+                position = _position;                
+                initialRadius = _initialRadius;
+                finalRadius = _initialRadius * (1 + _finalRadius);
+                actualRadius = initialRadius;
+                texture = Texture;
+                opacity = Opacity;               
+                xIncrement = X_Increment;
+                yIncrement = Y_Increment;
+            }
+
+            public Particle(Vector2 _position, Vector2 _initialPosition, float _initialRadius, float _finalRadius, int Texture, int Opacity, float X_Increment, float Y_Increment)
+            {
+                initialPosition = _initialPosition;
+                position = _position;
+                initialRadius = _initialRadius;
+                finalRadius = _finalRadius;
+                actualRadius = finalRadius - (position.X * (finalRadius - initialRadius) / initialPosition.X);
                 texture = Texture;
                 opacity = Opacity;
-               
+                xIncrement = X_Increment;
+                yIncrement = Y_Increment;
+            }
+
+            public Particle(Vector2 _position, Vector2 _initialPosition, float _initialRadius, float _actualRadius, float _finalRadius, int Texture, int Opacity, float X_Increment, float Y_Increment)
+            {
+                initialPosition = _initialPosition;
+                position = _position;            
+                initialRadius = _initialRadius;
+                finalRadius = _finalRadius;
+                actualRadius = _actualRadius;
+                texture = Texture;
+                opacity = Opacity;
                 xIncrement = X_Increment;
                 yIncrement = Y_Increment;
             }
@@ -49,14 +82,14 @@ namespace CSharpNation
         private List<Particle> particlesList = new List<Particle>();
         private List<Particle> particlesListMirror = new List<Particle>();
 
-        public void updateParticles(int texture, float aditionalVelocity)
+        public void UpdateParticles(int texture, float aditionalVelocity)
         {
-            deleteParticles();
-            createNewParticles(texture);
-            updateParticlesPosition(aditionalVelocity);
+            DeleteParticles();
+            CreateNewParticles(texture);
+            UpdateParticlesPosition(aditionalVelocity);
         }
 
-        private void deleteParticles()
+        private void DeleteParticles()
         {
             for (int i = 0; i < particlesList.Count; i++)
             {
@@ -68,12 +101,12 @@ namespace CSharpNation
             }
         }
 
-        private void createNewParticles(int texture)
+        private void CreateNewParticles(int texture)
         {
             while (particlesList.Count < _config.N_Particles)
             {
                 Particle P = new Particle(new Vector2(random.Next((maxWidth / 2) - (maxHeight / 4), (maxWidth / 2) + (maxHeight / 4)), random.Next((maxHeight / 2) - (maxHeight / 4), (maxHeight / 2) + (maxHeight / 4)))
-                                            , random.Next(5, 20) * sizeMultiplier, texture, random.Next(50, 255), (float)(-1 * random.NextDouble()), (float)(random.Next(-1, 2) * random.NextDouble()));
+                                            ,random.Next(5, 16) * sizeMultiplier, (float)random.NextDouble() * 4f, texture, random.Next(50, 255), (float)(-1 * random.NextDouble()), (float)(random.Next(-1, 2) * random.NextDouble()));
                 if (P.xIncrement > -0.5)
                 {
                     P.xIncrement = -0.5f;
@@ -89,11 +122,11 @@ namespace CSharpNation
                     {
                         P.yIncrement = (float)(-1f * random.NextDouble());
                     }
-                }
+                }                
 
                 particlesList.Add(P);
 
-                Particle P2 = new Particle(new Vector2((maxWidth / 2) + ((maxWidth / 2) - P.position.X), P.position.Y), P.radius, P.texture, P.opacity, P.xIncrement * -1, P.yIncrement);
+                Particle P2 = new Particle(new Vector2((maxWidth / 2) + ((maxWidth / 2) - P.position.X), P.position.Y), P.initialRadius, P.finalRadius, P.texture, P.opacity, P.xIncrement * -1, P.yIncrement);
 
                 particlesListMirror.Add(P2);
             }
@@ -114,27 +147,21 @@ namespace CSharpNation
             return value;
         }
         
-        private void updateParticlesPosition(float aditionalVelocity)
+        private void UpdateParticlesPosition(float aditionalVelocity)
         {
-            aditionalVelocity = Clamp(aditionalVelocity, 8, 0.25f);
+            aditionalVelocity = Clamp(aditionalVelocity, 8, 0.25f);                        
 
             for (int i = 0; i < particlesList.Count; i++)
-            {
-                Vector2 newVector = new Vector2(particlesList[i].position.X + particlesList[i].xIncrement * aditionalVelocity,
-                                                particlesList[i].position.Y + particlesList[i].yIncrement * aditionalVelocity);                
+            {                                
+                Vector2 newVector = new Vector2(particlesList[i].position.X + (particlesList[i].xIncrement * aditionalVelocity) * (particlesList[i].actualRadius * 1.25f / 18f),
+                                                particlesList[i].position.Y + (particlesList[i].yIncrement * aditionalVelocity) * (particlesList[i].actualRadius * 1.25f / 18f));
 
-                particlesList[i] = new Particle(newVector, particlesList[i].radius, particlesList[i].texture, particlesList[i].opacity,
+                particlesList[i] = new Particle(newVector, particlesList[i].initialPosition, particlesList[i].initialRadius, particlesList[i].finalRadius, particlesList[i].texture, particlesList[i].opacity,
                     particlesList[i].xIncrement, particlesList[i].yIncrement);
-            }
 
-            for (int i = 0; i < particlesListMirror.Count; i++)
-            {
-                Vector2 newVector = new Vector2(particlesListMirror[i].position.X + particlesListMirror[i].xIncrement * aditionalVelocity,
-                                                particlesListMirror[i].position.Y + particlesListMirror[i].yIncrement * aditionalVelocity);                
-
-                particlesListMirror[i] = new Particle(newVector, particlesListMirror[i].radius, particlesListMirror[i].texture, particlesListMirror[i].opacity,
+                particlesListMirror[i] = new Particle(new Vector2(maxWidth - particlesList[i].position.X, newVector.Y), particlesListMirror[i].initialPosition, particlesListMirror[i].initialRadius, particlesList[i].actualRadius, particlesListMirror[i].finalRadius, particlesListMirror[i].texture, particlesListMirror[i].opacity,
                     particlesListMirror[i].xIncrement, particlesListMirror[i].yIncrement);
-            }
+            }            
         }
 
         public List<Particle> GetParticlesList()

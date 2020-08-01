@@ -130,5 +130,17 @@ namespace CSharpNation {
                 this["Logo_Bottom_Offset"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool Enable_Background_Movement {
+            get {
+                return ((bool)(this["Enable_Background_Movement"]));
+            }
+            set {
+                this["Enable_Background_Movement"] = value;
+            }
+        }
     }
 }
